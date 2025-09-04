@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ASPIRELY</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="chat.html" class="nav-link">Chat</a>
+                <a href="recommendations.html" class="nav-link">Jobs</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="courses.html" class="nav-link">Courses</a>
+                <a href="voice.html" class="nav-link">Voice</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="index.html" class="nav-link" id="logoutBtn">Logout</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-main">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1 id="welcomeMessage">Welcome back!</h1>
+                <p>Here's your personalized career dashboard</p>
+            </div>
+
+            <div class="quick-actions">
+                <h2>Quick Actions</h2>
+                <div class="action-cards">
+                    <a href="chat.html" class="action-card">
+                        <div class="action-icon">🤖</div>
+                        <h3>AI Chat</h3>
+                        <p>Get instant career advice</p>
+                    </a>
+                    <a href="recommendations.html" class="action-card">
+                        <div class="action-icon">💼</div>
+                        <h3>Job Recommendations</h3>
+                        <p>Find your next opportunity</p>
+                    </a>
+                    <a href="analytics.html" class="action-card">
+                        <div class="action-icon">📊</div>
+                        <h3>Career Analytics</h3>
+                        <p>Track your progress</p>
+                    </a>
+                    <a href="courses.html" class="action-card">
+                        <div class="action-icon">🎓</div>
+                        <h3>Skill Development</h3>
+                        <p>Upskill and grow</p>
+                    </a>
+                    <a href="voice.html" class="action-card">
+                        <div class="action-icon">🎤</div>
+                        <h3>Voice Assistant</h3>
+                        <p>Hands-free guidance</p>
+                    </a>
+                    <a href="profile.html" class="action-card">
+                        <div class="action-icon">👤</div>
+                        <h3>Profile</h3>
+                        <p>Manage your information</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <div class="recommendations-section">
+                    <h2>Top Job Recommendations</h2>
+                    <div class="job-cards" id="jobRecommendations">
+                        <!-- Job cards will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="dashboard-sidebar">
+                    <div class="stats-card">
+                        <h3>Your Progress</h3>
+                        <div class="stat-item">
+                            <span class="stat-label">Profile Completion</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                            <span class="stat-value">85%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Skills Added</span>
+                            <span class="stat-value" id="skillsCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Applications</span>
+                            <span class="stat-value">0</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-item">
+                            <div class="activity-icon">✅</div>
+                            <div class="activity-text">Profile completed</div>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">🎯</div>
+                            <div class="activity-text">Career goals set</div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📊</div>
+                            <div class="activity-text">Analytics viewed</div>
+                            <div class="activity-time">2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

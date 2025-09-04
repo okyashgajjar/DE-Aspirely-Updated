@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="courses-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ASPIRELY</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="chat.html" class="nav-link">Chat</a>
+                <a href="recommendations.html" class="nav-link">Jobs</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="courses.html" class="nav-link active">Courses</a>
+                <a href="voice.html" class="nav-link">Voice</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="index.html" class="nav-link" id="logoutBtn">Logout</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="courses-main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Skill Development Courses</h1>
+                <p>Enhance your skills with personalized course recommendations</p>
+            </div>
+
+            <div class="courses-filters">
+                <div class="filter-group">
+                    <label for="skillFilter">Filter by Skill</label>
+                    <select id="skillFilter">
+                        <option value="">All Skills</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="react">React</option>
+                        <option value="data-science">Data Science</option>
+                        <option value="machine-learning">Machine Learning</option>
+                        <option value="design">UI/UX Design</option>
+                        <option value="project-management">Project Management</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="levelFilter">Difficulty Level</label>
+                    <select id="levelFilter">
+                        <option value="">All Levels</option>
+                        <option value="beginner">Beginner</option>
+                        <option value="intermediate">Intermediate</option>
+                        <option value="advanced">Advanced</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="durationFilter">Duration</label>
+                    <select id="durationFilter">
+                        <option value="">Any Duration</option>
+                        <option value="short">Under 10 hours</option>
+                        <option value="medium">10-30 hours</option>
+                        <option value="long">30+ hours</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="applyCourseFilters">Apply Filters</button>
+            </div>
+
+            <div class="courses-grid" id="coursesGrid">
+                <!-- Course cards will be populated by JavaScript -->
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>Complete React Developer Course</h3>
+                        <div class="course-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating">4.8</span>
+                        </div>
+                    </div>
+                    <div class="course-provider">Udemy</div>
+                    <div class="course-duration">45 hours</div>
+                    <div class="course-difficulty difficulty-intermediate">Intermediate</div>
+                    <div class="course-description">Master React development with hooks, context, and modern patterns</div>
+                    <div class="course-skills">
+                        <span class="skill-tag">React</span>
+                        <span class="skill-tag">JavaScript</span>
+                        <span class="skill-tag">Hooks</span>
+                    </div>
+                    <div class="course-price">$99.99</div>
+                </div>
+                
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>Python for Data Science</h3>
+                        <div class="course-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating">4.6</span>
+                        </div>
+                    </div>
+                    <div class="course-provider">Coursera</div>
+                    <div class="course-duration">40 hours</div>
+                    <div class="course-difficulty difficulty-beginner">Beginner</div>
+                    <div class="course-description">Learn Python programming for data analysis and visualization</div>
+                    <div class="course-skills">
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">Pandas</span>
+                        <span class="skill-tag">NumPy</span>
+                    </div>
+                    <div class="course-price">$79.99</div>
+                </div>
+                
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>Docker & Kubernetes</h3>
+                        <div class="course-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating">4.7</span>
+                        </div>
+                    </div>
+                    <div class="course-provider">Pluralsight</div>
+                    <div class="course-duration">25 hours</div>
+                    <div class="course-difficulty difficulty-advanced">Advanced</div>
+                    <div class="course-description">Master containerization and orchestration with Docker and Kubernetes</div>
+                    <div class="course-skills">
+                        <span class="skill-tag">Docker</span>
+                        <span class="skill-tag">Kubernetes</span>
+                        <span class="skill-tag">DevOps</span>
+                    </div>
+                    <div class="course-price">$149.99</div>
+                </div>
+            </div>
+
+            <div class="learning-path">
+                <h2>Recommended Learning Path</h2>
+                <p>Follow this structured path to achieve your career goals</p>
+                <div class="learning-paths-grid" id="learningPath">
+                    <!-- Learning path steps will be populated by JavaScript -->
+                    <div class="learning-path-card">
+                        <div class="path-header">
+                            <h3>Frontend Developer Path</h3>
+                            <div class="path-meta">
+                                <span class="duration">6 months</span>
+                                <span class="difficulty difficulty-intermediate">Intermediate</span>
+                            </div>
+                        </div>
+                        <div class="path-description">Complete path to become a professional frontend developer with modern frameworks and tools</div>
+                        <div class="path-skills">
+                            <h4>Skills You'll Learn:</h4>
+                            <div class="skills-tags">
+                                <span class="skill-tag">HTML</span>
+                                <span class="skill-tag">CSS</span>
+                                <span class="skill-tag">JavaScript</span>
+                                <span class="skill-tag">React</span>
+                                <span class="skill-tag">TypeScript</span>
+                            </div>
+                        </div>
+                        <div class="path-courses">
+                            <h4>Courses in this path:</h4>
+                            <div class="course-list">
+                                <div class="course-item">
+                                    <span class="course-name">Complete React Developer Course</span>
+                                    <span class="course-duration">45 hours</span>
+                                </div>
+                                <div class="course-item">
+                                    <span class="course-name">Advanced TypeScript</span>
+                                    <span class="course-duration">28 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary">Start Learning Path</button>
+                    </div>
+                    
+                    <div class="learning-path-card">
+                        <div class="path-header">
+                            <h3>Full Stack Developer Path</h3>
+                            <div class="path-meta">
+                                <span class="duration">8 months</span>
+                                <span class="difficulty difficulty-intermediate">Intermediate</span>
+                            </div>
+                        </div>
+                        <div class="path-description">Master both frontend and backend development with modern technologies</div>
+                        <div class="path-skills">
+                            <h4>Skills You'll Learn:</h4>
+                            <div class="skills-tags">
+                                <span class="skill-tag">Frontend</span>
+                                <span class="skill-tag">Backend</span>
+                                <span class="skill-tag">DevOps</span>
+                                <span class="skill-tag">Cloud</span>
+                                <span class="skill-tag">APIs</span>
+                            </div>
+                        </div>
+                        <div class="path-courses">
+                            <h4>Courses in this path:</h4>
+                            <div class="course-list">
+                                <div class="course-item">
+                                    <span class="course-name">Node.js Backend Development</span>
+                                    <span class="course-duration">50 hours</span>
+                                </div>
+                                <div class="course-item">
+                                    <span class="course-name">Docker & Kubernetes</span>
+                                    <span class="course-duration">25 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary">Start Learning Path</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/courses.js"></script>
+</body>
+</html>

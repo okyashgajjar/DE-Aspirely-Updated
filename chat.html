@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="chat-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ASPIRELY</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="chat.html" class="nav-link active">Chat</a>
+                <a href="recommendations.html" class="nav-link">Jobs</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="courses.html" class="nav-link">Courses</a>
+                <a href="voice.html" class="nav-link">Voice</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="index.html" class="nav-link" id="logoutBtn">Logout</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="chat-main">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1>AI Career Assistant</h1>
+                <p>Ask me anything about your career development</p>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Hello! I'm your AI career assistant. I can help you with:</p>
+                        <ul>
+                            <li>Finding the right career path</li>
+                            <li>Identifying skill gaps</li>
+                            <li>Preparing for interviews</li>
+                            <li>Salary negotiations</li>
+                            <li>Career transitions</li>
+                        </ul>
+                        <p>What would you like to know?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="suggestion-buttons" id="suggestionButtons">
+                <button class="suggestion-btn" data-query="Find roles that match my skills">Find roles that match my skills</button>
+                <button class="suggestion-btn" data-query="What skills am I missing?">What skills am I missing?</button>
+                <button class="suggestion-btn" data-query="Help me prepare for interviews">Help me prepare for interviews</button>
+                <button class="suggestion-btn" data-query="Career change advice">Career change advice</button>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message here..." autocomplete="off">
+                    <button id="sendBtn" class="send-btn">
+                        <span>Send</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22,2 15,22 11,13 2,9"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>

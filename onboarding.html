@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="onboarding-page">
+    <div class="onboarding-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="onboarding-card">
+            <div class="step-indicator">
+                <span id="currentStep">1</span> of <span id="totalSteps">12</span>
+            </div>
+            
+            <form id="onboardingForm" class="onboarding-form">
+                <!-- Step 1: Personal Information -->
+                <div class="step active" data-step="1">
+                    <h2>Let's get to know you</h2>
+                    <p>Tell us about yourself to personalize your experience</p>
+                    
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <div class="location-inputs">
+                            <select id="country" name="country" required>
+                                <option value="">Select Country</option>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                                <option value="DE">Germany</option>
+                                <option value="FR">France</option>
+                                <option value="IN">India</option>
+                                <option value="SG">Singapore</option>
+                            </select>
+                            <input type="text" id="state" name="state" placeholder="State/Province" required>
+                            <input type="text" id="city" name="city" placeholder="City" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Education -->
+                <div class="step" data-step="2">
+                    <h2>Your Education</h2>
+                    <p>Help us understand your educational background</p>
+                    
+                    <div class="form-group">
+                        <label for="education">Highest Education Level *</label>
+                        <select id="education" name="education" required>
+                            <option value="">Select Education Level</option>
+                            <option value="high-school">High School</option>
+                            <option value="associate">Associate Degree</option>
+                            <option value="bachelor">Bachelor's Degree</option>
+                            <option value="master">Master's Degree</option>
+                            <option value="phd">PhD</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fieldOfStudy">Field of Study</label>
+                        <input type="text" id="fieldOfStudy" name="fieldOfStudy" placeholder="e.g., Computer Science, Business Administration">
+                    </div>
+                </div>
+
+                <!-- Step 3: Experience -->
+                <div class="step" data-step="3">
+                    <h2>Work Experience</h2>
+                    <p>Tell us about your professional experience</p>
+                    
+                    <div class="form-group">
+                        <label for="experience">Years of Experience *</label>
+                        <select id="experience" name="experience" required>
+                            <option value="">Select Experience</option>
+                            <option value="0-1">0-1 years</option>
+                            <option value="2-3">2-3 years</option>
+                            <option value="4-6">4-6 years</option>
+                            <option value="7-10">7-10 years</option>
+                            <option value="11-15">11-15 years</option>
+                            <option value="15+">15+ years</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="employmentStatus">Current Employment Status *</label>
+                        <select id="employmentStatus" name="employmentStatus" required>
+                            <option value="">Select Status</option>
+                            <option value="employed">Employed</option>
+                            <option value="unemployed">Unemployed</option>
+                            <option value="student">Student</option>
+                            <option value="freelancer">Freelancer</option>
+                            <option value="entrepreneur">Entrepreneur</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 4: Target Domains -->
+                <div class="step" data-step="4">
+                    <h2>Career Interests</h2>
+                    <p>What domains interest you most?</p>
+                    
+                    <div class="form-group">
+                        <label>Target Domains * (Select all that apply)</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="software">
+                                <span class="checkmark"></span>
+                                Software Development
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="data">
+                                <span class="checkmark"></span>
+                                Data Science
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="ai-ml">
+                                <span class="checkmark"></span>
+                                AI/ML
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="design">
+                                <span class="checkmark"></span>
+                                Design
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="marketing">
+                                <span class="checkmark"></span>
+                                Marketing
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="sales">
+                                <span class="checkmark"></span>
+                                Sales
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="finance">
+                                <span class="checkmark"></span>
+                                Finance
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="domains" value="product">
+                                <span class="checkmark"></span>
+                                Product Management
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Desired Roles -->
+                <div class="step" data-step="5">
+                    <h2>Desired Roles</h2>
+                    <p>What roles are you interested in?</p>
+                    
+                    <div class="form-group">
+                        <label for="desiredRoles">Desired Roles *</label>
+                        <textarea id="desiredRoles" name="desiredRoles" placeholder="e.g., Frontend Developer, Data Scientist, Product Manager" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 6: Work Preferences -->
+                <div class="step" data-step="6">
+                    <h2>Work Preferences</h2>
+                    <p>How do you prefer to work?</p>
+                    
+                    <div class="form-group">
+                        <label for="workType">Preferred Work Type *</label>
+                        <select id="workType" name="workType" required>
+                            <option value="">Select Work Type</option>
+                            <option value="onsite">Onsite</option>
+                            <option value="remote">Remote</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="relocation">Relocation Willingness *</label>
+                        <select id="relocation" name="relocation" required>
+                            <option value="">Select Preference</option>
+                            <option value="willing">Willing to relocate</option>
+                            <option value="not-willing">Not willing to relocate</option>
+                            <option value="open">Open to discussion</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 7: Skills -->
+                <div class="step" data-step="7">
+                    <h2>Your Skills</h2>
+                    <p>What skills do you currently have?</p>
+                    
+                    <div class="form-group">
+                        <label>Technical Skills</label>
+                        <div class="skills-input">
+                            <input type="text" id="skillInput" placeholder="Add a skill">
+                            <button type="button" id="addSkill" class="btn btn-secondary">Add</button>
+                        </div>
+                        <div class="skills-list" id="skillsList"></div>
+                    </div>
+                </div>
+
+                <!-- Step 8: Certifications -->
+                <div class="step" data-step="8">
+                    <h2>Certifications & Projects</h2>
+                    <p>Any relevant certifications or projects?</p>
+                    
+                    <div class="form-group">
+                        <label for="certifications">Certifications (Optional)</label>
+                        <textarea id="certifications" name="certifications" placeholder="e.g., AWS Certified Developer, Google Analytics Certified"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="projects">Notable Projects (Optional)</label>
+                        <textarea id="projects" name="projects" placeholder="Describe any significant projects you've worked on"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 9: Languages -->
+                <div class="step" data-step="9">
+                    <h2>Languages</h2>
+                    <p>What languages do you speak?</p>
+                    
+                    <div class="form-group">
+                        <label for="languages">Languages *</label>
+                        <textarea id="languages" name="languages" placeholder="e.g., English (Native), Spanish (Fluent), French (Conversational)" required></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 10: Career Goals -->
+                <div class="step" data-step="10">
+                    <h2>Career Goals</h2>
+                    <p>What are your career aspirations?</p>
+                    
+                    <div class="form-group">
+                        <label for="careerGoals">Career Goals (Optional)</label>
+                        <textarea id="careerGoals" name="careerGoals" placeholder="Describe your short-term and long-term career goals"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 11: Salary Expectations -->
+                <div class="step" data-step="11">
+                    <h2>Salary Expectations</h2>
+                    <p>Help us match you with appropriate opportunities</p>
+                    
+                    <div class="form-group">
+                        <label for="salaryExpectation">Expected Salary Range</label>
+                        <select id="salaryExpectation" name="salaryExpectation">
+                            <option value="">Select Range</option>
+                            <option value="30k-50k">$30k - $50k</option>
+                            <option value="50k-70k">$50k - $70k</option>
+                            <option value="70k-100k">$70k - $100k</option>
+                            <option value="100k-150k">$100k - $150k</option>
+                            <option value="150k+">$150k+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 12: Final Step -->
+                <div class="step" data-step="12">
+                    <h2>Almost Done!</h2>
+                    <p>Review your information and complete your profile</p>
+                    
+                    <div class="summary">
+                        <h3>Profile Summary</h3>
+                        <div id="profileSummary"></div>
+                    </div>
+                </div>
+            </form>
+            
+            <div class="step-navigation">
+                <button type="button" id="prevBtn" class="btn btn-secondary" disabled>Previous</button>
+                <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+                <button type="button" id="finishBtn" class="btn btn-primary" style="display: none;">Complete Profile</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/onboarding.js"></script>
+</body>
+</html>

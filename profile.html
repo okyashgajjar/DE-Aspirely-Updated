@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="profile-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ASPIRELY</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="chat.html" class="nav-link">Chat</a>
+                <a href="recommendations.html" class="nav-link">Jobs</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="courses.html" class="nav-link">Courses</a>
+                <a href="voice.html" class="nav-link">Voice</a>
+                <a href="profile.html" class="nav-link active">Profile</a>
+                <a href="index.html" class="nav-link" id="logoutBtn">Logout</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="profile-main">
+        <div class="container">
+            <div class="page-header">
+                <h1>My Profile</h1>
+                <p>Manage your personal information and career preferences</p>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-sidebar">
+                    <div class="profile-avatar">
+                        <div class="avatar-circle" id="profileAvatar">
+                            <span id="avatarInitials">U</span>
+                        </div>
+                        <button class="edit-avatar-btn">Change Photo</button>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Profile Completion</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="profileProgress"></div>
+                            </div>
+                            <span class="stat-value" id="profilePercentage">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Skills Added</span>
+                            <span class="stat-value" id="skillsCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Member Since</span>
+                            <span class="stat-value" id="memberSince">2024</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-content">
+                    <form class="profile-form" id="profileForm">
+                        <div class="form-section">
+                            <h3>Personal Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="fullName">Full Name</label>
+                                    <input type="text" id="fullName" name="fullName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="country">Country</label>
+                                    <select id="country" name="country" required>
+                                        <option value="">Select Country</option>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="UK">United Kingdom</option>
+                                        <option value="AU">Australia</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="FR">France</option>
+                                        <option value="IN">India</option>
+                                        <option value="SG">Singapore</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="state">State/Province</label>
+                                    <input type="text" id="state" name="state" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="city">City</label>
+                                    <input type="text" id="city" name="city" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Professional Information</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="education">Education Level</label>
+                                    <select id="education" name="education" required>
+                                        <option value="">Select Education Level</option>
+                                        <option value="high-school">High School</option>
+                                        <option value="associate">Associate Degree</option>
+                                        <option value="bachelor">Bachelor's Degree</option>
+                                        <option value="master">Master's Degree</option>
+                                        <option value="phd">PhD</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="experience">Years of Experience</label>
+                                    <select id="experience" name="experience" required>
+                                        <option value="">Select Experience</option>
+                                        <option value="0-1">0-1 years</option>
+                                        <option value="2-3">2-3 years</option>
+                                        <option value="4-6">4-6 years</option>
+                                        <option value="7-10">7-10 years</option>
+                                        <option value="11-15">11-15 years</option>
+                                        <option value="15+">15+ years</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="fieldOfStudy">Field of Study</label>
+                                <input type="text" id="fieldOfStudy" name="fieldOfStudy" placeholder="e.g., Computer Science, Business Administration">
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Career Preferences</h3>
+                            <div class="form-group">
+                                <label>Target Domains</label>
+                                <div class="checkbox-grid">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="software">
+                                        <span class="checkmark"></span>
+                                        Software Development
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="data">
+                                        <span class="checkmark"></span>
+                                        Data Science
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="ai-ml">
+                                        <span class="checkmark"></span>
+                                        AI/ML
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="design">
+                                        <span class="checkmark"></span>
+                                        Design
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="marketing">
+                                        <span class="checkmark"></span>
+                                        Marketing
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="sales">
+                                        <span class="checkmark"></span>
+                                        Sales
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="finance">
+                                        <span class="checkmark"></span>
+                                        Finance
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" name="domains" value="product">
+                                        <span class="checkmark"></span>
+                                        Product Management
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="desiredRoles">Desired Roles</label>
+                                <textarea id="desiredRoles" name="desiredRoles" placeholder="e.g., Frontend Developer, Data Scientist, Product Manager"></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="workType">Preferred Work Type</label>
+                                    <select id="workType" name="workType" required>
+                                        <option value="">Select Work Type</option>
+                                        <option value="onsite">Onsite</option>
+                                        <option value="remote">Remote</option>
+                                        <option value="hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="relocation">Relocation Willingness</label>
+                                    <select id="relocation" name="relocation" required>
+                                        <option value="">Select Preference</option>
+                                        <option value="willing">Willing to relocate</option>
+                                        <option value="not-willing">Not willing to relocate</option>
+                                        <option value="open">Open to discussion</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Skills & Expertise</h3>
+                            <div class="form-group">
+                                <label>Technical Skills</label>
+                                <div class="skills-input">
+                                    <input type="text" id="skillInput" placeholder="Add a skill">
+                                    <button type="button" id="addSkill" class="btn btn-secondary">Add</button>
+                                </div>
+                                <div class="skills-list" id="skillsList"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="languages">Languages</label>
+                                <textarea id="languages" name="languages" placeholder="e.g., English (Native), Spanish (Fluent), French (Conversational)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="certifications">Certifications</label>
+                                <textarea id="certifications" name="certifications" placeholder="e.g., AWS Certified Developer, Google Analytics Certified"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="projects">Notable Projects</label>
+                                <textarea id="projects" name="projects" placeholder="Describe any significant projects you've worked on"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Career Goals</h3>
+                            <div class="form-group">
+                                <label for="careerGoals">Career Goals</label>
+                                <textarea id="careerGoals" name="careerGoals" placeholder="Describe your short-term and long-term career goals"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="salaryExpectation">Expected Salary Range</label>
+                                <select id="salaryExpectation" name="salaryExpectation">
+                                    <option value="">Select Range</option>
+                                    <option value="30k-50k">$30k - $50k</option>
+                                    <option value="50k-70k">$50k - $70k</option>
+                                    <option value="70k-100k">$70k - $100k</option>
+                                    <option value="100k-150k">$100k - $150k</option>
+                                    <option value="150k+">$150k+</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" class="btn btn-secondary" id="resetForm">Reset to Default</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

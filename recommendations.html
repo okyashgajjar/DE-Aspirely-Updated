@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Recommendations - Virtual Career Advisor</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="recommendations-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ASPIRELY</h2>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="chat.html" class="nav-link">Chat</a>
+                <a href="recommendations.html" class="nav-link active">Jobs</a>
+                <a href="analytics.html" class="nav-link">Analytics</a>
+                <a href="courses.html" class="nav-link">Courses</a>
+                <a href="voice.html" class="nav-link">Voice</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="#" class="nav-link" id="logoutBtn">Logout</a>
+            </div>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="recommendations-main">
+        <div class="container">
+            <div class="page-header">
+                <h1>Job Recommendations</h1>
+                <p>Personalized job matches based on your profile</p>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label for="locationFilter">Location</label>
+                    <select id="locationFilter">
+                        <option value="">All Locations</option>
+                        <option value="remote">Remote</option>
+                        <option value="onsite">Onsite</option>
+                        <option value="hybrid">Hybrid</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="experienceFilter">Experience Level</label>
+                    <select id="experienceFilter">
+                        <option value="">All Levels</option>
+                        <option value="entry">Entry Level</option>
+                        <option value="mid">Mid Level</option>
+                        <option value="senior">Senior Level</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="salaryFilter">Salary Range</label>
+                    <select id="salaryFilter">
+                        <option value="">All Ranges</option>
+                        <option value="50k-70k">$50k - $70k</option>
+                        <option value="70k-100k">$70k - $100k</option>
+                        <option value="100k-150k">$100k - $150k</option>
+                        <option value="150k+">$150k+</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="applyFilters">Apply Filters</button>
+            </div>
+
+            <div class="recommendations-grid" id="recommendationsGrid">
+                <!-- Job cards will be populated by JavaScript -->
+                <div class="job-card">
+                    <div class="job-header">
+                        <h3>Senior Frontend Developer</h3>
+                        <div class="match-score">95%</div>
+                    </div>
+                    <div class="job-company">TechCorp Inc.</div>
+                    <div class="job-location">Remote • Full-time</div>
+                    <div class="job-salary">$120k - $150k</div>
+                    <div class="job-description">We're looking for a senior frontend developer to lead our React-based web applications and mentor junior developers.</div>
+                    <div class="job-skills">
+                        <h4>Required Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-required">React</span>
+                            <span class="skill-tag skill-required">TypeScript</span>
+                            <span class="skill-tag skill-required">JavaScript</span>
+                            <span class="skill-tag skill-required">CSS</span>
+                        </div>
+                    </div>
+                    <div class="job-skills">
+                        <h4>Missing Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-missing">GraphQL</span>
+                            <span class="skill-tag skill-missing">Testing</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Apply Now</button>
+                </div>
+                
+                <div class="job-card">
+                    <div class="job-header">
+                        <h3>Full Stack Developer</h3>
+                        <div class="match-score">87%</div>
+                    </div>
+                    <div class="job-company">StartupXYZ</div>
+                    <div class="job-location">Hybrid • Full-time</div>
+                    <div class="job-salary">$90k - $120k</div>
+                    <div class="job-description">Join our growing team as a full stack developer working on both frontend and backend systems.</div>
+                    <div class="job-skills">
+                        <h4>Required Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-required">React</span>
+                            <span class="skill-tag skill-required">Node.js</span>
+                            <span class="skill-tag skill-required">MongoDB</span>
+                            <span class="skill-tag skill-required">JavaScript</span>
+                        </div>
+                    </div>
+                    <div class="job-skills">
+                        <h4>Missing Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-missing">Docker</span>
+                            <span class="skill-tag skill-missing">AWS</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Apply Now</button>
+                </div>
+                
+                <div class="job-card">
+                    <div class="job-header">
+                        <h3>Data Scientist</h3>
+                        <div class="match-score">78%</div>
+                    </div>
+                    <div class="job-company">DataCorp Analytics</div>
+                    <div class="job-location">Onsite • Full-time</div>
+                    <div class="job-salary">$100k - $130k</div>
+                    <div class="job-description">Analyze large datasets and build machine learning models to drive business insights.</div>
+                    <div class="job-skills">
+                        <h4>Required Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-required">Python</span>
+                            <span class="skill-tag skill-required">Machine Learning</span>
+                            <span class="skill-tag skill-required">Pandas</span>
+                            <span class="skill-tag skill-required">SQL</span>
+                        </div>
+                    </div>
+                    <div class="job-skills">
+                        <h4>Missing Skills:</h4>
+                        <div class="skills-tags">
+                            <span class="skill-tag skill-missing">TensorFlow</span>
+                            <span class="skill-tag skill-missing">Statistics</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">Apply Now</button>
+                </div>
+            </div>
+
+            <div class="courses-section">
+                <h2>Recommended Courses</h2>
+                <p>Improve your skills to match these job requirements</p>
+                <div class="courses-grid" id="coursesGrid">
+                    <!-- Course cards will be populated by JavaScript -->
+                    <div class="course-card">
+                        <div class="course-header">
+                            <h3>GraphQL with React</h3>
+                            <div class="course-rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating">4.8</span>
+                            </div>
+                        </div>
+                        <div class="course-provider">Frontend Masters</div>
+                        <div class="course-duration">20 hours</div>
+                        <div class="course-difficulty difficulty-intermediate">Intermediate</div>
+                        <div class="course-description">Learn GraphQL integration with React applications</div>
+                        <div class="course-skills">
+                            <span class="skill-tag">GraphQL</span>
+                            <span class="skill-tag">React</span>
+                            <span class="skill-tag">Apollo</span>
+                        </div>
+                        <div class="course-price">$79.99</div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-header">
+                            <h3>Testing React Applications</h3>
+                            <div class="course-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating">4.6</span>
+                            </div>
+                        </div>
+                        <div class="course-provider">Udemy</div>
+                        <div class="course-duration">15 hours</div>
+                        <div class="course-difficulty difficulty-intermediate">Intermediate</div>
+                        <div class="course-description">Master testing strategies for React applications</div>
+                        <div class="course-skills">
+                            <span class="skill-tag">Testing</span>
+                            <span class="skill-tag">Jest</span>
+                            <span class="skill-tag">React Testing Library</span>
+                        </div>
+                        <div class="course-price">$49.99</div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-header">
+                            <h3>Docker for Developers</h3>
+                            <div class="course-rating">
+                                <span class="stars">★★★★★</span>
+                                <span class="rating">4.7</span>
+                            </div>
+                        </div>
+                        <div class="course-provider">Pluralsight</div>
+                        <div class="course-duration">25 hours</div>
+                        <div class="course-difficulty difficulty-beginner">Beginner</div>
+                        <div class="course-description">Learn containerization with Docker for modern development</div>
+                        <div class="course-skills">
+                            <span class="skill-tag">Docker</span>
+                            <span class="skill-tag">Containers</span>
+                            <span class="skill-tag">DevOps</span>
+                        </div>
+                        <div class="course-price">$89.99</div>
+                    </div>
+                    
+                    <div class="course-card">
+                        <div class="course-header">
+                            <h3>AWS Fundamentals</h3>
+                            <div class="course-rating">
+                                <span class="stars">★★★★☆</span>
+                                <span class="rating">4.5</span>
+                            </div>
+                        </div>
+                        <div class="course-provider">AWS Training</div>
+                        <div class="course-duration">30 hours</div>
+                        <div class="course-difficulty difficulty-intermediate">Intermediate</div>
+                        <div class="course-description">Master Amazon Web Services cloud platform</div>
+                        <div class="course-skills">
+                            <span class="skill-tag">AWS</span>
+                            <span class="skill-tag">Cloud</span>
+                            <span class="skill-tag">EC2</span>
+                        </div>
+                        <div class="course-price">$199.99</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/recommendations.js"></script>
+</body>
+</html>
