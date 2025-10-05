@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Recommendations - Aspirely</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/custom.css" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-glass fixed-top">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="dashboard.html">Aspirely<span class="brand-dot"></span></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navDash" aria-controls="navDash" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navDash">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="chat.html">AI Chatbot</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="recommendations.html">Jobs</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="analytics.html">Analytics</a></li>
+                        <li class="nav-item"><a class="nav-link" href="voice.html">Voice Talk</a></li>
+                        <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
+                        <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+                    </ul>
+                    <button onclick="logout()" class="btn btn-outline-light">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+<main>
+    <section class="container py-4">
+        <h2 class="h4 mb-3">Recommended Jobs</h2>
+        <div class="row g-3 align-items-end mb-3">
+            <div class="col-12 col-md-4">
+                <label class="form-label">Skill</label>
+                <select id="skillFilter" class="form-select">
+                <option value="all">All Skills</option>
+                <option value="Python">Python</option>
+                <option value="JavaScript">JavaScript</option>
+                <option value="UI/UX">UI/UX</option>
+                <option value="Data Science">Data Science</option>
+                <option value="DevOps">DevOps</option>
+            </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label">Experience</label>
+                <select id="expFilter" class="form-select">
+                <option value="all">All Experience</option>
+                <option value="0-2">0-2 yrs</option>
+                <option value="2-5">2-5 yrs</option>
+                <option value=">5">5+ yrs</option>
+            </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label">Location</label>
+                <select id="locFilter" class="form-select">
+                <option value="all">All Locations</option>
+                <option value="Remote">Remote</option>
+                <option value="Bengaluru">Bengaluru</option>
+                <option value="Pune">Pune</option>
+                <option value="Hyderabad">Hyderabad</option>
+            </select>
+            </div>
+        </div>
+        <div id="jobList" class="row g-3">
+            <!-- 10+ jobs -->
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="JavaScript" data-exp="2-5" data-loc="Bengaluru">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Frontend Engineer</h5><p class="text-secondary">Acme Labs • Bengaluru • 3-5 yrs</p><p class="mb-0">Skills: JavaScript, React, CSS</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="Python" data-exp="2-5" data-loc="Remote">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Backend Developer</h5><p class="text-secondary">DataFlow • Remote • 2-4 yrs</p><p class="mb-0">Skills: Python, Flask, SQL</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="Data Science" data-exp=">5" data-loc="Hyderabad">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Senior Data Scientist</h5><p class="text-secondary">Insight AI • Hyderabad • 6-8 yrs</p><p class="mb-0">Skills: ML, Python, NLP</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="UI/UX" data-exp="0-2" data-loc="Pune">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Product Designer</h5><p class="text-secondary">BrightApps • Pune • 0-2 yrs</p><p class="mb-0">Skills: Figma, UX research</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="DevOps" data-exp="2-5" data-loc="Bengaluru">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">DevOps Engineer</h5><p class="text-secondary">Cloudy • Bengaluru • 3-5 yrs</p><p class="mb-0">Skills: AWS, CI/CD, Docker</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="JavaScript" data-exp="0-2" data-loc="Remote">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Junior Web Developer</h5><p class="text-secondary">Nimbus • Remote • 0-1 yr</p><p class="mb-0">Skills: JS, HTML, CSS</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="Python" data-exp=">5" data-loc="Bengaluru">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Lead Backend Engineer</h5><p class="text-secondary">ScaleUp • Bengaluru • 7+ yrs</p><p class="mb-0">Skills: Python, Microservices</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="Data Science" data-exp="2-5" data-loc="Pune">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">Data Analyst</h5><p class="text-secondary">Quantify • Pune • 2-3 yrs</p><p class="mb-0">Skills: SQL, Python, BI</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="UI/UX" data-exp="2-5" data-loc="Remote">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">UX Designer</h5><p class="text-secondary">DesignHub • Remote • 2-4 yrs</p><p class="mb-0">Skills: Wireframing, Prototyping</p></div></div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 job" data-skill="DevOps" data-exp=">5" data-loc="Hyderabad">
+                <div class="card h-100 shadow-sm"><div class="card-body"><h5 class="card-title">SRE</h5><p class="text-secondary">Reliant • Hyderabad • 6+ yrs</p><p class="mb-0">Skills: Kubernetes, Terraform</p></div></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="py-12 bg-dark text-white-50 mt-auto">
+    <div class="container d-flex justify-content-center align-items-center">&copy; 2025 Aspirely. All rights reserved.</div>
+    </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/recommendations.js"></script>
+</body>
+</html>

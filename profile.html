@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile - Aspirely</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="css/custom.css" rel="stylesheet">
+<link rel="icon" type="image/png" href="assets/images/logo.png">
+
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-glass fixed-top">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="dashboard.html">Aspirely<span class="brand-dot"></span></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navDash" aria-controls="navDash" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navDash">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="chat.html">AI Chatbot</a></li>
+                        <li class="nav-item"><a class="nav-link" href="recommendations.html">Jobs</a></li>
+                        <li class="nav-item"><a class="nav-link" href="analytics.html">Analytics</a></li>
+                        <li class="nav-item"><a class="nav-link" href="voice.html">Voice Talk</a></li>
+                        <li class="nav-item"><a class="nav-link" href="courses.html">Courses</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="profile.html">Profile</a></li>
+                    </ul>
+                    <button onclick="logout()" class="btn btn-outline-light">Logout</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+<main>
+    <section class="container py-4" style="max-width: 760px;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="h4 mb-3">Edit Profile</h2>
+                <form id="profileForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label" for="prof_name">Full Name</label>
+                        <input type="text" id="prof_name" class="form-control" required>
+                        <div class="invalid-feedback">Name is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="prof_email">Email</label>
+                        <input type="email" id="prof_email" class="form-control" required>
+                        <div class="invalid-feedback">Valid email required.</div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="prof_education">Highest education</label>
+                            <select id="prof_education" class="form-select">
+                                <option>High School</option>
+                                <option>Diploma</option>
+                                <option>Bachelor's</option>
+                                <option>Master's</option>
+                                <option>PhD</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="prof_experience">Years of experience</label>
+                            <input type="number" id="prof_experience" class="form-control" min="0" max="40">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Preferred locations</label>
+                        <div class="d-flex flex-wrap gap-2" id="prof_locations">
+                            <button type="button" class="btn btn-outline-secondary btn-sm chip" data-value="Remote">Remote</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm chip" data-value="Bengaluru">Bengaluru</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm chip" data-value="Pune">Pune</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm chip" data-value="Hyderabad">Hyderabad</button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label">Primary skills</label>
+                        <div class="d-flex flex-wrap gap-3" id="prof_primary">
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="Python" id="ps1"><label class="form-check-label" for="ps1">Python</label></div>
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="JavaScript" id="ps2"><label class="form-check-label" for="ps2">JavaScript</label></div>
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="UI/UX" id="ps3"><label class="form-check-label" for="ps3">UI/UX</label></div>
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="Data Science" id="ps4"><label class="form-check-label" for="ps4">Data Science</label></div>
+                            <div class="form-check"><input class="form-check-input" type="checkbox" value="DevOps" id="ps5"><label class="form-check-label" for="ps5">DevOps</label></div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label" for="prof_secondary">Secondary skills (comma separated)</label>
+                        <input type="text" id="prof_secondary" class="form-control">
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label" for="prof_role">Desired role</label>
+                        <select id="prof_role" class="form-select">
+                            <option>Frontend Developer</option>
+                            <option>Backend Developer</option>
+                            <option>Fullstack Developer</option>
+                            <option>Data Scientist</option>
+                            <option>Product Designer</option>
+                        </select>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label" for="prof_salary">Expected salary (₹ LPA)</label>
+                        <input type="range" id="prof_salary" class="form-range" min="3" max="80">
+                        <p class="text-secondary">Selected: <span id="prof_salary_value">0</span> LPA</p>
+                    </div>
+                    <div class="mt-2">
+                        <div class="mb-1"><strong>Preferred company size</strong></div>
+                        <div class="d-flex gap-4">
+                            <div class="form-check"><input class="form-check-input" type="radio" name="prof_size" value="Startup" id="psz1"><label class="form-check-label" for="psz1">Startup</label></div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="prof_size" value="Mid" id="psz2"><label class="form-check-label" for="psz2">Mid</label></div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="prof_size" value="Enterprise" id="psz3"><label class="form-check-label" for="psz3">Enterprise</label></div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label" for="prof_goals">Learning goals (6 months)</label>
+                        <textarea id="prof_goals" rows="3" class="form-control"></textarea>
+                    </div>
+                    <div class="d-grid"><button type="submit" class="btn btn-info text-white">Save Profile</button></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div id="saveToast" class="toast align-items-center text-bg-success border-0" role="status" aria-live="polite" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">Profile saved</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

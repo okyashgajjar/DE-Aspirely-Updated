@@ -1,0 +1,275 @@
+{
+    "designSystem": {
+      "overview": {
+        "name": "Cryptix Design System",
+        "style": "Modern Crypto/Fintech",
+        "aesthetic": "Dark mode with vibrant accent colors, glassmorphism effects, and clean typography"
+      },
+      "colorPalette": {
+        "primary": {
+          "cyan": "#00FFC8",
+          "description": "Bright cyan/turquoise - used for CTAs, accents, and brand color"
+        },
+        "background": {
+          "dark": "#1A1D23",
+          "darkerGray": "#0F1115",
+          "cardBackground": "#242830",
+          "description": "Multi-layered dark backgrounds with subtle gradients"
+        },
+        "text": {
+          "primary": "#FFFFFF",
+          "secondary": "#9CA3AF",
+          "muted": "#6B7280"
+        },
+        "accent": {
+          "green": "#00FFC8",
+          "gradient": "Linear gradient from cyan to darker tones",
+          "border": "Subtle green/cyan glow effects"
+        }
+      },
+      "typography": {
+        "fontFamily": {
+          "primary": "Sans-serif (modern, clean - likely Inter, SF Pro, or similar)",
+          "characteristics": "Geometric, highly legible, neutral"
+        },
+        "scale": {
+          "hero": {
+            "size": "72-96px",
+            "weight": "400-500",
+            "lineHeight": "1.1",
+            "usage": "Main headline text"
+          },
+          "h1": {
+            "size": "48-56px",
+            "weight": "500-600",
+            "usage": "Section headers"
+          },
+          "h2": {
+            "size": "32-40px",
+            "weight": "500",
+            "usage": "Subsection headers"
+          },
+          "body": {
+            "size": "16-18px",
+            "weight": "400",
+            "lineHeight": "1.6",
+            "usage": "Descriptive text"
+          },
+          "small": {
+            "size": "14px",
+            "weight": "400",
+            "usage": "Labels, captions"
+          }
+        },
+        "treatment": {
+          "headings": "Clean, minimal, sentence case or title case",
+          "body": "Slightly transparent white for readability contrast"
+        }
+      },
+      "spacing": {
+        "scale": "8px base unit",
+        "common": {
+          "xs": "8px",
+          "sm": "16px",
+          "md": "24px",
+          "lg": "32px",
+          "xl": "48px",
+          "2xl": "64px",
+          "3xl": "96px"
+        },
+        "sectionPadding": "64-96px vertical",
+        "cardPadding": "24-32px",
+        "buttonPadding": "12px 24px"
+      },
+      "layout": {
+        "structure": {
+          "maxWidth": "1200-1400px",
+          "container": "Centered with side margins",
+          "grid": "12-column responsive grid"
+        },
+        "patterns": {
+          "hero": {
+            "alignment": "Center-aligned content",
+            "structure": "Heading + subheading + CTA + trust indicators",
+            "background": "Large gradient background with visual break"
+          },
+          "sections": {
+            "spacing": "Large vertical spacing between sections",
+            "background": "Alternating or consistent dark tones"
+          },
+          "cards": {
+            "style": "Rounded corners (12-16px), dark background, subtle borders",
+            "shadow": "Minimal or none, relies on background contrast",
+            "hover": "Subtle lift or glow effect"
+          }
+        }
+      },
+      "components": {
+        "buttons": {
+          "primary": {
+            "background": "Cyan gradient or solid",
+            "color": "Dark text (#000 or #1A1D23)",
+            "padding": "12-16px 24-32px",
+            "borderRadius": "8-12px",
+            "fontSize": "16px",
+            "fontWeight": "500",
+            "icon": "Arrow icon on right (optional)",
+            "hover": "Slight brightness increase or shadow"
+          },
+          "secondary": {
+            "background": "Transparent",
+            "border": "1px solid rgba(255,255,255,0.1)",
+            "color": "White",
+            "hover": "Border brightens, background subtle fill"
+          }
+        },
+        "navigation": {
+          "position": "Fixed or sticky top",
+          "background": "Dark with slight transparency/blur",
+          "height": "70-80px",
+          "logo": "Left-aligned with icon + text",
+          "links": {
+            "color": "White/light gray",
+            "spacing": "24-32px apart",
+            "hover": "Cyan color or underline"
+          },
+          "cta": "Primary button style on right"
+        },
+        "cards": {
+          "dashboard": {
+            "background": "Dark card (#242830)",
+            "borderRadius": "16px",
+            "padding": "24-32px",
+            "border": "1px solid rgba(255,255,255,0.05)",
+            "shadow": "None or very subtle"
+          },
+          "feature": {
+            "layout": "Icon/number + heading + description",
+            "alignment": "Left or center",
+            "spacing": "16-24px internal"
+          }
+        },
+        "dataVisualization": {
+          "charts": {
+            "style": "Line charts with gradient fills",
+            "colors": "Cyan to transparent gradient",
+            "grid": "Subtle gray lines",
+            "background": "Dark card"
+          },
+          "metrics": {
+            "value": "Large white text",
+            "label": "Small gray text above",
+            "change": "Green/red indicator with percentage"
+          }
+        },
+        "inputs": {
+          "textField": {
+            "background": "Darker than card (#1A1D23)",
+            "border": "1px solid rgba(255,255,255,0.1)",
+            "borderRadius": "8px",
+            "padding": "12-16px",
+            "fontSize": "16px",
+            "focus": "Cyan border glow"
+          },
+          "dropdown": {
+            "style": "Same as text field",
+            "icon": "Chevron on right"
+          }
+        },
+        "icons": {
+          "style": "Line icons (outlined)",
+          "weight": "1.5-2px stroke",
+          "size": "20-24px standard",
+          "color": "White or cyan for active states"
+        },
+        "badges": {
+          "crypto": {
+            "shape": "Circle with coin icon",
+            "size": "32-40px",
+            "background": "Coin-specific color or dark",
+            "border": "Subtle outline"
+          }
+        },
+        "testimonials": {
+          "layout": "Card with quote + avatar + name + title",
+          "avatar": "Circular, left or top",
+          "quote": "Large text, quotation marks optional",
+          "navigation": "Previous/Next buttons",
+          "pagination": "Dots or numbers"
+        },
+        "accordion": {
+          "header": {
+            "background": "Transparent",
+            "border": "Bottom border",
+            "icon": "Plus/minus on right",
+            "padding": "20-24px 0"
+          },
+          "content": {
+            "padding": "16-24px 0",
+            "color": "Light gray"
+          }
+        }
+      },
+      "effects": {
+        "gradients": {
+          "background": "Radial or linear cyan to dark",
+          "placement": "Hero sections, behind elements",
+          "opacity": "20-40% for subtlety"
+        },
+        "blur": {
+          "glassmorphism": "backdrop-blur on cards/navigation",
+          "amount": "10-20px"
+        },
+        "shadows": {
+          "cards": "0 4px 20px rgba(0,0,0,0.3) (subtle)",
+          "buttons": "0 2px 8px rgba(0,255,200,0.3) (cyan glow)"
+        },
+        "animations": {
+          "hover": "Transform scale(1.02) or translate",
+          "transitions": "0.2-0.3s ease-in-out",
+          "loading": "Subtle shimmer or pulse"
+        },
+        "borders": {
+          "standard": "1px solid rgba(255,255,255,0.05-0.1)",
+          "glow": "1px solid rgba(0,255,200,0.3)",
+          "radius": "8-16px depending on component"
+        }
+      },
+      "patterns": {
+        "contentHierarchy": {
+          "principle": "Large headlines, clear CTAs, supporting text in gray",
+          "whitespace": "Generous spacing for breathing room",
+          "emphasis": "Cyan color for important elements"
+        },
+        "userFlow": {
+          "steps": "Numbered cards with icons/visuals",
+          "progression": "Left to right horizontal layout",
+          "clarity": "One concept per card"
+        },
+        "trustSignals": {
+          "ratings": "Star icons + number + source",
+          "testimonials": "Real photos + titles + companies",
+          "placement": "Below hero, dedicated sections"
+        }
+      },
+      "responsiveness": {
+        "breakpoints": {
+          "mobile": "320-767px",
+          "tablet": "768-1023px",
+          "desktop": "1024px+"
+        },
+        "behavior": {
+          "navigation": "Hamburger menu on mobile",
+          "cards": "Stack vertically on mobile",
+          "typography": "Reduce heading sizes by 30-40%",
+          "spacing": "Reduce vertical spacing by 30-50%"
+        }
+      },
+      "accessibility": {
+        "contrast": "WCAG AA compliant (white on dark backgrounds)",
+        "focusStates": "Visible cyan outline",
+        "interactiveElements": "Minimum 44x44px touch targets",
+        "semanticHTML": "Proper heading hierarchy, landmarks"
+      }
+    }
+  }
