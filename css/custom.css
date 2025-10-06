@@ -76,6 +76,9 @@ footer.bg-dark{ background-color: var(--asp-secondary) !important; }
 .bg-light{
   color: #000000 !important;
 }
+.mic-btn{
+  margin-top: 50px;
+}
 
 /* Responsive adjustments */
 @media (max-width: 991.98px){
