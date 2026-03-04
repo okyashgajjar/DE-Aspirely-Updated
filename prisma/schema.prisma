@@ -1,0 +1,121 @@
+// Prisma schema for ASPIRELY, targeting Supabase Postgres
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DATABASE_DIRECT_URL")
+  schemas    = ["public", "auth"]
+}
+
+model User {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email      String   @unique
+  name       String?
+  avatar     String?
+  bio        String?
+  location   String?
+  created_at DateTime @default(now())
+  deleted_at DateTime?
+
+  onboarding_profiles OnboardingProfile[]
+  skill_gaps          SkillGap[]
+  chat_history        ChatMessage[]
+  mock_interviews     MockInterview[]
+  settings            Settings?
+  analytics_events    AnalyticsEvent[]
+
+  @@map("users")
+}
+
+model OnboardingProfile {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id         String   @db.Uuid
+  skills          String[]
+  interests       String[]
+  experience_level String?
+  education       String?
+  goals           String[]
+  completed_at    DateTime?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, completed_at])
+  @@map("onboarding_profiles")
+}
+
+model SkillGap {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id         String   @db.Uuid
+  user_skills     String[]
+  job_skills      String[]
+  missing_skills  String[]
+  similarity_score Float
+  source_job_ids  String[]
+  computed_at     DateTime
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, computed_at])
+  @@map("skill_gaps")
+}
+
+model ChatMessage {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String   @db.Uuid
+  role       String
+  content    String
+  model_used String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+  @@map("chat_history")
+}
+
+model MockInterview {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id      String   @db.Uuid
+  role_selected String
+  transcript    Json
+  ai_feedback   Json
+  score         Int
+  duration      Int
+  created_at    DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+  @@map("mock_interviews")
+}
+
+model Settings {
+  id                String  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id           String  @unique @db.Uuid
+  email_alerts      Boolean @default(true)
+  job_notifications Boolean @default(true)
+  weekly_digest     Boolean @default(true)
+  theme_preference  String?
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("settings")
+}
+
+model AnalyticsEvent {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String   @db.Uuid
+  event_type String
+  metadata   Json
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, created_at])
+  @@map("analytics_events")
+}
+
