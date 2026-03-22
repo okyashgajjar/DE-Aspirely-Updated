@@ -4,6 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { DashboardChart } from "@/components/dashboard/dashboard-chart";
+import { DashboardJobsPreview } from "@/components/dashboard/dashboard-jobs";
+import { DashboardCoursesPreview } from "@/components/dashboard/dashboard-courses";
 
 export const dynamic = "force-dynamic";
 
@@ -91,25 +94,6 @@ async function getDashboardData() {
     skillGapPercent,
   };
 
-  // Build recent activity from events
-  const eventLabels: Record<string, string> = {
-    onboarding_completed: "Onboarding completed",
-    profile_updated: "Profile updated",
-    job_clicked: "Job viewed",
-    job_viewed: "Job viewed",
-    course_clicked: "Course viewed",
-    course_viewed: "Course viewed",
-    mock_interview_completed: "Mock interview completed",
-    chat_session_started: "Chat session started",
-  };
-
-  const activity = events.slice(0, 5).map((e, idx) => ({
-    id: `evt_${idx}`,
-    title: eventLabels[e.event_type as string] ?? (e.event_type as string),
-    description: null as string | null,
-    createdAt: (e.created_at as string) ?? new Date().toISOString(),
-  }));
-
   return {
     user: userData
       ? {
@@ -123,7 +107,7 @@ async function getDashboardData() {
       }
       : null,
     stats,
-    activity,
+    interviews,
   };
 }
 
@@ -153,7 +137,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function DashboardPage() {
-  const { user, profile, stats, activity } = await getDashboardData();
+  const { user, profile, stats, interviews } = await getDashboardData();
 
   const dashStats = stats ?? {
     jobsMatched: 0,
@@ -163,123 +147,105 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <section className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
+            <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
               Dashboard
             </p>
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Hi {user?.name ?? "there"}
+            <h2 className="font-display text-4xl font-bold tracking-tight">
+              Hi, {user?.name ?? "there"}.
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-medium">
               Your next best moves, based on your skills and goals.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" asChild className="rounded-full border-border hover:bg-surface-container-low transition-colors">
               <Link href="/profile">Edit profile</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="rounded-full bg-gradient-to-br from-primary to-primary-container text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all hover:scale-105 active:scale-95">
               <Link href="/jobs">Explore jobs</Link>
             </Button>
           </div>
         </div>
       </section>
 
+      {/* Overview Cards */}
       <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Jobs Matched", value: dashStats.jobsMatched },
-          { label: "Courses Suggested", value: dashStats.coursesSuggested },
-          { label: "Interview Score", value: dashStats.interviewScore },
-          { label: "Skill Gap %", value: `${dashStats.skillGapPercent}%` },
-        ].map((s) => (
-          <Card key={s.label}>
-            <CardHeader>
-              <CardTitle className="text-sm">{s.label}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-semibold">{s.value}</div>
-            </CardContent>
-          </Card>
+          { label: "Jobs Matched", value: dashStats.jobsMatched, color: "text-primary" },
+          { label: "Courses Suggested", value: dashStats.coursesSuggested, color: "text-secondary" },
+          { label: "Interview Score", value: dashStats.interviewScore, color: "text-tertiary" },
+          { label: "Skill Gap %", value: `${dashStats.skillGapPercent}%`, color: "text-foreground" },
+        ].map((s, i) => (
+          <div key={s.label} className="glass-panel overflow-hidden rounded-3xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 relative group">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
+            <h3 className="text-sm font-medium text-muted-foreground mb-4">{s.label}</h3>
+            <div className={`font-display text-4xl font-bold ${s.color}`}>{s.value}</div>
+          </div>
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-sm">Recent activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {activity.length === 0 ? (
-              <div className="rounded-lg border border-border bg-background/50 p-6 text-sm text-muted-foreground">
-                No activity yet. Start by exploring jobs or running a mock interview.
-              </div>
-            ) : (
-              <ul className="space-y-3">
-                {activity.map((item) => (
-                  <li
-                    key={item.id}
-                    className="rounded-lg border border-border bg-background/50 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium">{item.title}</p>
-                      <Badge variant="outline">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </Badge>
-                    </div>
-                    {item.description ? (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {item.description}
-                      </p>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+      {/* Main Content Grid */}
+      <section className="grid gap-6 lg:grid-cols-3">
+        {/* Left Column: Analytics Chart & Jobs */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          {/* Performance Analytics */}
+          <div className="glass-panel rounded-3xl p-6 flex flex-col border border-border/50">
+            <h3 className="font-display text-xl font-bold mb-2">Performance Trajectory</h3>
+            <p className="text-sm text-muted-foreground mb-4">Your mock interview scores over time.</p>
+            <DashboardChart interviews={interviews as any} />
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Quick links</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2">
-              {[
-                { href: "/jobs", label: "Jobs" },
-                { href: "/courses", label: "Courses" },
-                { href: "/analytics", label: "Analytics" },
-                { href: "/chatbot", label: "Chatbot" },
-                { href: "/mock-interview", label: "Mock interviews" },
-                { href: "/settings", label: "Settings" },
-              ].map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  className="rounded-md border border-border bg-background/50 px-3 py-2 text-sm hover:bg-muted"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-            <div className="mt-4 rounded-lg border border-border bg-background/50 p-4">
-              <p className="text-sm font-medium">Profile snapshot</p>
-              {profile ? (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {profile.experience_level ?? "—"} ·{" "}
-                  {profile.skills.slice(0, 3).join(", ")}
-                  {profile.skills.length > 3 ? "…" : ""}
-                </p>
+          {/* Job Previews */}
+          <div className="glass-panel rounded-3xl p-6 border border-border/50">
+            <h3 className="font-display text-xl font-bold mb-2">Recommended Opportunities</h3>
+            <p className="text-sm text-muted-foreground mb-6">Jobs precisely matched to your current skill profile.</p>
+            <DashboardJobsPreview />
+          </div>
+        </div>
+
+        {/* Right Column: Profile & Courses */}
+        <div className="flex flex-col gap-6">
+          {/* Profile Snapshot */}
+          <div className="glass-panel rounded-3xl p-6 border border-border/50 relative overflow-hidden text-center">
+             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-surface-container-highest border-2 border-primary/20 flex items-center justify-center shadow-inner">
+                 <span className="text-2xl font-display font-bold text-primary">{user?.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
+             </div>
+             <h3 className="font-display text-lg font-bold">Profile Snapshot</h3>
+             {profile ? (
+                <>
+                  <p className="mt-2 text-sm text-primary font-medium">{profile.experience_level ?? "—"}</p>
+                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                     {profile.skills.slice(0, 3).map(skill => (
+                        <span key={skill} className="rounded-md bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
+                          {skill}
+                        </span>
+                     ))}
+                     {profile.skills.length > 3 && (
+                        <span className="rounded-md bg-surface-container px-2 py-1 text-xs font-medium text-muted-foreground">
+                          +{profile.skills.length - 3}
+                        </span>
+                     )}
+                  </div>
+                </>
               ) : (
                 <p className="mt-2 text-sm text-muted-foreground">
                   Complete onboarding to personalize Aspirely.
                 </p>
               )}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Courses Previews */}
+          <div className="glass-panel rounded-3xl p-6 border border-border/50 flex-1">
+            <h3 className="font-display text-xl font-bold mb-2">Skill Builders</h3>
+            <p className="text-sm text-muted-foreground mb-6">Courses to close your skill gaps.</p>
+            <DashboardCoursesPreview />
+          </div>
+        </div>
       </section>
     </div>
   );

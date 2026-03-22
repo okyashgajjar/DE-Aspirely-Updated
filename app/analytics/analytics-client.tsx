@@ -114,11 +114,16 @@ export function AnalyticsClient() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-44" />
-        <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-6 animate-fade-in-up">
+        <Skeleton className="h-10 w-48 rounded-full bg-surface-container" />
+        <div className="grid gap-6 md:grid-cols-4">
+           {Array.from({ length: 4 }).map((_, idx) => (
+             <Skeleton key={idx} className="h-28 w-full rounded-3xl bg-surface-container" />
+           ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <Skeleton key={idx} className="h-72 w-full rounded-xl" />
+            <Skeleton key={idx} className="h-80 w-full rounded-3xl bg-surface-container" />
           ))}
         </div>
       </div>
@@ -127,69 +132,55 @@ export function AnalyticsClient() {
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Couldn&apos;t load analytics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">{error}</p>
-        </CardContent>
-      </Card>
+      <div className="glass-panel rounded-3xl p-12 border border-destructive/20 text-center text-muted-foreground max-w-2xl mx-auto mt-12">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 mb-6 border border-destructive/20 text-destructive">
+             <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        </div>
+        <h3 className="font-display text-2xl font-bold text-destructive mb-2">Telemetry Disconnected</h3>
+        <p className="text-sm">{error}</p>
+      </div>
     );
   }
 
   if (!data) return null;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
+        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
           Market Intelligence
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          {data.summary.role} insights
+        <h2 className="font-display text-4xl font-bold tracking-tight">
+          {data.summary.role} Insights.
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-medium">
           Real-time salary trends and vacancy demand for your primary stack.
         </p>
       </section>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Jobs Viewed</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-1">
-            <p className="text-2xl font-bold">{data.summary.activity.jobs}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Courses Tracked</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-1">
-            <p className="text-2xl font-bold">{data.summary.activity.courses}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Interviews</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-1">
-            <p className="text-2xl font-bold">{data.summary.activity.interviews}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="p-4 pb-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Interview Score</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-1">
-            <p className="text-2xl font-bold">{data.summary.activity.score}%</p>
-          </CardContent>
-        </Card>
+        <div className="glass-panel rounded-3xl p-6 border border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Jobs Viewed</h3>
+          <p className="font-display text-4xl font-bold text-primary">{data.summary.activity.jobs}</p>
+        </div>
+        <div className="glass-panel rounded-3xl p-6 border border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-secondary/5">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Courses Tracked</h3>
+          <p className="font-display text-4xl font-bold text-secondary">{data.summary.activity.courses}</p>
+        </div>
+        <div className="glass-panel rounded-3xl p-6 border border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-tertiary/5">
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Interviews</h3>
+          <p className="font-display text-4xl font-bold text-tertiary">{data.summary.activity.interviews}</p>
+        </div>
+        <div className="glass-panel rounded-3xl p-6 border border-border/50 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-foreground/5 relative overflow-hidden group">
+          <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-foreground/5 blur-2xl group-hover:bg-foreground/10 transition-colors" />
+          <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Interview Score</h3>
+          <p className="font-display text-4xl font-bold text-foreground">{data.summary.activity.score}%</p>
+        </div>
       </div>
 
-      <AnalyticsCharts data={data} />
+      <div className="glass-panel rounded-3xl p-6 lg:p-8 border border-border/50 shadow-inner bg-surface-container-low/30 backdrop-blur-2xl">
+        <AnalyticsCharts data={data} />
+      </div>
     </div>
   );
 }

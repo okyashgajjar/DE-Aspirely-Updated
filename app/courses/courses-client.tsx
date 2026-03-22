@@ -84,31 +84,33 @@ export function CoursesClient() {
   }, [activeTag]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
+        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
           Courses
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Fill your skill gaps
+        <h2 className="font-display text-4xl font-bold tracking-tight">
+          Fill your skill gaps.
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Filter by skill tag. Courses are grouped by the gap they cover.
+        <p className="text-sm text-muted-foreground font-medium">
+          Filter by skill tag. Curated courses grouped by the precise gap they cover.
         </p>
       </section>
 
-      <section className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card p-3">
+      <section className="flex flex-wrap items-center gap-3 rounded-3xl border border-border/50 bg-surface-container-low/30 p-4 shadow-inner">
         <Button
           variant={activeTag === null ? "default" : "outline"}
           onClick={() => setActiveTag(null)}
+          className={activeTag === null ? "rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20" : "rounded-full border-border hover:bg-surface-container text-muted-foreground hover:text-foreground transition-all"}
         >
-          All
+          Master List
         </Button>
         {skillTags.slice(0, 10).map((tag) => (
           <Button
             key={tag}
             variant={activeTag === tag ? "default" : "outline"}
             onClick={() => setActiveTag(tag)}
+            className={activeTag === tag ? "rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 font-bold" : "rounded-full border-border hover:bg-surface-container text-muted-foreground hover:text-foreground transition-all"}
           >
             {tag}
           </Button>
@@ -116,84 +118,79 @@ export function CoursesClient() {
       </section>
 
       {error ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Couldn&apos;t load courses</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">{error}</p>
-            <Button onClick={() => void load()}>Retry</Button>
-          </CardContent>
-        </Card>
+        <div className="glass-panel rounded-3xl p-8 border border-destructive/20 text-center">
+            <h3 className="font-display text-xl font-bold text-destructive mb-2">Sync Failed</h3>
+            <p className="text-sm text-muted-foreground mb-6">{error}</p>
+            <Button onClick={() => void load()} className="rounded-full">Retry Connection</Button>
+        </div>
       ) : null}
 
       {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-44" />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-44 rounded-full bg-surface-container" />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, idx) => (
-              <Skeleton key={idx} className="h-60 w-full rounded-xl" />
+              <Skeleton key={idx} className="h-72 w-full rounded-3xl bg-surface-container" />
             ))}
           </div>
         </div>
       ) : groupedCourses.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No course recommendations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Complete onboarding to get personalized course suggestions based on your skill gaps.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="glass-panel rounded-3xl p-12 text-center border border-border/50">
+           <div className="mx-auto mb-6 h-16 w-16 rounded-full bg-surface-container flex items-center justify-center border border-border">
+              <span className="text-2xl opacity-50">?</span>
+           </div>
+           <h3 className="font-display text-xl font-bold mb-2">No active curriculums</h3>
+           <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              Complete onboarding to unlock your personalized course suggestions. Only the most effective material will be surfaced.
+           </p>
+        </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-12">
           {groupedCourses.map((group) => (
-            <section key={group.tag} className="space-y-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base font-semibold">{group.tag}</h3>
-                  <Badge variant="outline">{group.items.length}</Badge>
-                </div>
+            <section key={group.tag} className="space-y-6">
+              <div className="flex items-center gap-4 border-b border-border/50 pb-4">
+                <h3 className="font-display text-2xl font-bold">{group.tag}</h3>
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  {group.items.length} Modules
+                </span>
               </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {group.items.map((course) => (
-                  <Card key={course.id} className="overflow-hidden">
-                    <div className="relative aspect-video w-full bg-muted">
+                  <div key={course.id} className="group glass-panel overflow-hidden rounded-3xl border border-border/50 transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10 flex flex-col">
+                    <div className="relative aspect-video w-full bg-surface-container overflow-hidden">
                       <Image
                         src={course.youtubeThumbnailUrl}
                         alt={course.title}
                         fill
                         sizes="(max-width: 1024px) 100vw, 33vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent pointer-events-none" />
+                      {course.fillsSkillGap ? (
+                        <div className="absolute top-4 right-4 rounded-full bg-secondary/20 backdrop-blur-md border border-secondary/30 px-3 py-1 font-mono text-[10px] font-bold text-secondary shadow-lg">
+                          GAP FOCUS
+                        </div>
+                      ) : null}
                     </div>
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-3">
-                        <CardTitle className="text-sm">{course.title}</CardTitle>
-                        {course.fillsSkillGap ? (
-                          <Badge variant="accent">Fills skill gap</Badge>
-                        ) : null}
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {course.channelName} · {course.durationLabel}
+                    
+                    <div className="p-6 flex flex-col flex-1">
+                      <h4 className="font-display text-lg font-bold line-clamp-2 mb-2 group-hover:text-primary transition-colors">{course.title}</h4>
+                      <p className="text-xs text-muted-foreground font-medium mb-6">
+                        {course.channelName} <span className="mx-1 opacity-50">•</span> {course.durationLabel}
                       </p>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex flex-wrap gap-1">
-                        <Badge variant="outline">{course.skillTag}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <Button variant="outline" asChild>
+                      
+                      <div className="mt-auto flex items-center justify-between pt-4 border-t border-border/30">
+                        <Button variant="ghost" asChild className="rounded-full border border-border/50 hover:bg-primary hover:text-primary-foreground hover:border-transparent transition-all">
                           <a href={course.url} target="_blank" rel="noreferrer">
-                            Watch
+                            Begin Module
                           </a>
                         </Button>
-                        <Button variant="ghost">Save</Button>
+                        <Button variant="ghost" size="icon" className="rounded-full hover:bg-surface-container hover:text-primary transition-colors text-muted-foreground">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>

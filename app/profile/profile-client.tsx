@@ -183,177 +183,202 @@ export function ProfileClient() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-44" />
-        <Skeleton className="h-64 w-full rounded-xl" />
-        <Skeleton className="h-56 w-full rounded-xl" />
+      <div className="space-y-8 animate-fade-in-up">
+        <div className="space-y-4 max-w-2xl">
+           <Skeleton className="h-6 w-32 rounded-full bg-surface-container" />
+           <Skeleton className="h-10 w-64 rounded-xl bg-surface-container" />
+        </div>
+        <Skeleton className="h-[500px] w-full rounded-3xl bg-surface-container" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
-          Profile
+        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
+          User Matrix
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Your information
+        <h2 className="font-display text-4xl font-bold tracking-tight">
+          Profile Information.
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Update your onboarding fields to improve recommendations.
+        <p className="text-sm text-muted-foreground font-medium">
+          Control your identity parameters to calibrate AI recommendations.
         </p>
       </section>
 
       {error ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </CardContent>
-        </Card>
+        <div className="glass-panel rounded-3xl p-6 border border-destructive/20 bg-destructive/5 text-destructive font-medium text-sm text-center">
+            {error}
+        </div>
       ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Avatar</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">Supabase Storage</Badge>
-            <p className="text-sm text-muted-foreground">
-              Upload a profile photo to Supabase Storage.
-            </p>
-          </div>
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => void onAvatarChange(e.target.files?.[0] ?? null)}
-            disabled={avatarUploading}
-          />
-        </CardContent>
-      </Card>
+      <div className="glass-panel rounded-3xl border border-border/50 shadow-inner bg-surface-container-low/30 backdrop-blur-2xl overflow-hidden">
+         <div className="p-6 md:p-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-border/50 bg-background/40">
+           <div className="space-y-1 relative">
+             <h3 className="font-display text-2xl font-bold tracking-tight">Avatar Configuration</h3>
+             <p className="text-sm text-muted-foreground font-medium">
+                Upload a primary visual identifier to Supabase Storage.
+             </p>
+           </div>
+           <div className="flex items-center gap-4">
+              <Badge variant="outline" className="rounded-full bg-secondary/10 text-secondary border-secondary/20 font-mono text-[10px] px-3 py-1">
+                 SUPABASE LINK ACTIVE
+              </Badge>
+              <div className="relative">
+                 <Input
+                   type="file"
+                   accept="image/*"
+                   className="absolute inset-0 opacity-0 cursor-pointer w-[120px] h-10"
+                   onChange={(e) => void onAvatarChange(e.target.files?.[0] ?? null)}
+                   disabled={avatarUploading}
+                 />
+                 <Button variant="outline" disabled={avatarUploading} className="rounded-full bg-background border-border/50 hover:bg-surface-container w-[120px]">
+                    {avatarUploading ? "Uplinking..." : "Select File"}
+                 </Button>
+              </div>
+           </div>
+         </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Onboarding fields</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Skills (comma-separated)</label>
-            <Textarea
-              value={skillsText}
-              onChange={(e) => setSkillsText(e.target.value)}
-              placeholder="React, TypeScript, SQL"
-            />
-          </div>
+         <div className="p-6 md:p-8 space-y-8 bg-background/20 relative">
+             <div className="absolute top-0 right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Experience</label>
-            <Input
-              value={experienceLevel}
-              onChange={(e) => setExperienceLevel(e.target.value)}
-              placeholder="e.g. junior, mid, senior"
-            />
-          </div>
+             <div className="grid gap-8 md:grid-cols-2">
+               <div className="space-y-3 md:col-span-2 relative">
+                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Technical Arsenal (Comma-separated)</label>
+                 <Textarea
+                   value={skillsText}
+                   onChange={(e) => setSkillsText(e.target.value)}
+                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
+                   placeholder="React, TypeScript, Go, Machine Learning"
+                 />
+               </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Education</label>
-            <Input
-              value={education}
-              onChange={(e) => setEducation(e.target.value)}
-              placeholder="e.g. BSc Computer Science"
-            />
-          </div>
+               <div className="space-y-3">
+                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Experience Vector</label>
+                 <Input
+                   value={experienceLevel}
+                   onChange={(e) => setExperienceLevel(e.target.value)}
+                   className="h-12 rounded-full border-border/50 bg-surface-container px-5 focus-visible:ring-primary/50 shadow-inner font-medium"
+                   placeholder="e.g. Senior, L5, Lead"
+                 />
+               </div>
 
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="location">Location</Label>
-            <LocationAutocomplete
-              id="location"
-              className="w-full"
-              defaultValue={location}
-              onLocationSelect={(loc) => setLocation(loc)}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. San Francisco, CA"
-            />
-          </div>
+               <div className="space-y-3">
+                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Academic Credentials</label>
+                 <Input
+                   value={education}
+                   onChange={(e) => setEducation(e.target.value)}
+                   className="h-12 rounded-full border-border/50 bg-surface-container px-5 focus-visible:ring-primary/50 shadow-inner font-medium"
+                   placeholder="e.g. MS Computer Science"
+                 />
+               </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">
-              Interests (comma-separated)
-            </label>
-            <Textarea
-              value={interestsText}
-              onChange={(e) => setInterestsText(e.target.value)}
-              placeholder="Frontend Engineering, Data & AI"
-            />
-          </div>
+               <div className="space-y-3 sm:col-span-2">
+                 <Label htmlFor="location" className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Geographic Coordinates</Label>
+                 <div className="relative flex items-center bg-surface-container rounded-full shadow-inner border border-border/50 focus-within:ring-1 focus-within:ring-primary/50 focus-within:border-primary/50 px-2">
+                     <LocationAutocomplete
+                       id="location"
+                       className="w-full h-12 bg-transparent border-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 font-medium shadow-none"
+                       defaultValue={location}
+                       onLocationSelect={(loc) => setLocation(loc)}
+                       onChange={(e) => setLocation(e.target.value)}
+                       placeholder="e.g. Seattle, WA"
+                     />
+                 </div>
+               </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <label className="text-sm font-medium">Goals (comma-separated)</label>
-            <Textarea
-              value={goalsText}
-              onChange={(e) => setGoalsText(e.target.value)}
-              placeholder="Prepare for interviews, Grow into senior"
-            />
-          </div>
+               <div className="space-y-3 md:col-span-2">
+                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                   Domains of Interest
+                 </label>
+                 <Textarea
+                   value={interestsText}
+                   onChange={(e) => setInterestsText(e.target.value)}
+                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
+                   placeholder="Distributed Systems, Real-time rendering"
+                 />
+               </div>
 
-          <div className="mt-2 flex items-center justify-end gap-2 md:col-span-2">
-            <Button variant="outline" onClick={() => router.push("/onboarding")}>
-              Re-run onboarding
-            </Button>
-            <Button onClick={() => void onSave()} disabled={saving || !profile}>
-              {saving ? "Saving…" : "Save changes"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+               <div className="space-y-3 md:col-span-2">
+                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Career Targets</label>
+                 <Textarea
+                   value={goalsText}
+                   onChange={(e) => setGoalsText(e.target.value)}
+                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
+                   placeholder="Master system design, transition to management"
+                 />
+               </div>
+             </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Danger zone</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Permanently delete your account and all associated data.
-          </p>
-          <Button variant="outline" onClick={() => setConfirmDeleteOpen(true)}>
-            Delete account
-          </Button>
-        </CardContent>
-      </Card>
+             <div className="pt-6 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
+                <Button variant="ghost" onClick={() => router.push("/onboarding")} className="text-muted-foreground hover:text-foreground hover:bg-surface-container rounded-full text-xs font-bold uppercase tracking-widest">
+                  Reset Matrix
+                </Button>
+                <Button 
+                   onClick={() => void onSave()} 
+                   disabled={saving || !profile}
+                   className="h-12 rounded-full px-8 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all w-full md:w-auto"
+                >
+                  {saving ? "Synchronizing..." : "Commit Data"}
+                </Button>
+             </div>
+         </div>
+      </div>
+
+      <div className="glass-panel rounded-3xl border border-destructive/20 bg-destructive/5 overflow-hidden">
+         <div className="p-6 md:p-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+           <div className="space-y-1">
+             <h3 className="font-display text-2xl font-bold tracking-tight text-destructive">Termination Protocol</h3>
+             <p className="text-sm font-medium opacity-80 text-foreground">
+               Permanently purge your identity matrix and all associated telemetry.
+             </p>
+           </div>
+           <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} className="rounded-full shadow-lg shadow-destructive/20 font-bold tracking-wide">
+             Initiate Purge
+           </Button>
+         </div>
+      </div>
 
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <DialogHeader>
-          <DialogTitle>Delete account</DialogTitle>
-          <DialogDescription>
-            Type <span className="font-medium">delete</span> to confirm. This is
-            irreversible.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogContent className="space-y-3">
-          <Input
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            placeholder="delete"
-          />
+        <DialogContent className="glass-panel border-border/50 bg-background/90 backdrop-blur-2xl rounded-3xl p-8 max-w-md shadow-2xl">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="font-display text-2xl font-bold text-destructive">Confirm Termination</DialogTitle>
+            <DialogDescription className="text-sm font-medium text-foreground/80 mt-2">
+              Type <span className="font-mono font-bold text-destructive select-all">delete</span> to authorize total core purge. This action is irreversible.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Awaiting authorization code..."
+              className="h-12 rounded-full border-destructive/30 bg-destructive/5 text-destructive font-mono font-bold text-center tracking-widest focus-visible:ring-destructive/50 placeholder:text-destructive/30"
+            />
+          </div>
+          <DialogFooter className="mt-2 outline-none border-none">
+             <div className="flex items-center gap-3 w-full">
+                <Button
+                  variant="ghost"
+                  className="flex-1 rounded-full text-foreground hover:bg-surface-container"
+                  onClick={() => {
+                    setConfirmDeleteOpen(false);
+                    setConfirmText("");
+                  }}
+                >
+                  Abort
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 rounded-full font-bold shadow-lg shadow-destructive/20"
+                  onClick={() => void onDeleteAccount()}
+                  disabled={!deleteEnabled || saving}
+                >
+                  Execute
+                </Button>
+             </div>
+          </DialogFooter>
         </DialogContent>
-        <DialogFooter
-          onClose={() => {
-            setConfirmDeleteOpen(false);
-            setConfirmText("");
-          }}
-        >
-          <Button
-            variant="destructive"
-            onClick={() => void onDeleteAccount()}
-            disabled={!deleteEnabled || saving}
-          >
-            Delete
-          </Button>
-        </DialogFooter>
       </Dialog>
     </div>
   );

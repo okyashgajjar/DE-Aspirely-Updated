@@ -118,205 +118,201 @@ export function SettingsClient() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-44" />
-        <Skeleton className="h-72 w-full rounded-xl" />
+      <div className="space-y-8 animate-fade-in-up">
+        <div className="space-y-4 max-w-2xl">
+           <Skeleton className="h-6 w-32 rounded-full bg-surface-container" />
+           <Skeleton className="h-10 w-64 rounded-xl bg-surface-container" />
+        </div>
+        <Skeleton className="h-44 w-full rounded-3xl bg-surface-container" />
+        <Skeleton className="h-[400px] w-full rounded-3xl bg-surface-container" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8 animate-fade-in-up">
       <section className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
-          Settings
+        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
+          Global Parameters
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight">
-          Notifications and preferences
+        <h2 className="font-display text-4xl font-bold tracking-tight">
+          System Preferences.
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Keep control over alerts and your theme.
+        <p className="text-sm text-muted-foreground font-medium">
+          Control application telemetry, notifications, and cosmetic overrides.
         </p>
       </section>
 
       {error ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Settings error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">{error}</p>
-          </CardContent>
-        </Card>
+        <div className="glass-panel rounded-3xl p-6 border border-destructive/20 bg-destructive/5 text-destructive font-medium text-sm text-center">
+            {error}
+        </div>
       ) : null}
 
-      <Card>
-        <CardHeader className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <CardTitle className="text-base">Preferences</CardTitle>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline">Theme: {theme ?? "system"}</Badge>
-            <Button
-              variant="outline"
-              onClick={() => {
-                const next =
-                  settings?.theme_preference === "dark" ? "light" : "dark";
-                setSettings((s) =>
-                  s ? { ...s, theme_preference: next } : s,
-                );
-                setTheme(next);
-                void save();
-              }}
-            >
-              Toggle theme
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-4">
-            <div>
-              <p className="text-sm font-medium">Email Alerts</p>
-              <p className="text-xs text-muted-foreground">
-                Important account and security notifications.
-              </p>
+      <div className="glass-panel rounded-3xl border border-border/50 shadow-inner bg-surface-container-low/30 backdrop-blur-2xl overflow-hidden relative">
+         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+         
+         <div className="p-6 md:p-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-border/50 bg-background/40">
+           <div className="space-y-1 relative">
+             <h3 className="font-display text-2xl font-bold tracking-tight">Aesthetics Override</h3>
+             <p className="text-sm text-muted-foreground font-medium">
+                Switch visual parameters between ocular modes.
+             </p>
+           </div>
+           
+           <div className="flex items-center gap-4 bg-surface-container p-2 rounded-2xl border border-border/50 shadow-inner">
+              <Badge variant="outline" className="rounded-full bg-background border-border/50 font-mono text-[10px] px-3 py-1 text-foreground">
+                 STATUS: {theme?.toUpperCase() ?? "SYSTEM"}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full font-bold tracking-widest uppercase text-[10px] shadow-sm hover:scale-105 active:scale-95 transition-all"
+                onClick={() => {
+                  const next = settings?.theme_preference === "dark" ? "light" : "dark";
+                  setSettings((s) => s ? { ...s, theme_preference: next } : s);
+                  setTheme(next);
+                  void save();
+                }}
+              >
+                Toggle Optics
+              </Button>
+           </div>
+         </div>
+
+         <div className="p-6 md:p-8 space-y-6 bg-background/20">
+            <h3 className="font-display text-xl font-bold tracking-tight mb-4">Telemetry Config</h3>
+            
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-surface-container p-5 hover:bg-surface-container-low transition-colors group">
+              <div>
+                <p className="font-display text-lg font-bold">Email Alerts</p>
+                <p className="text-sm text-muted-foreground font-medium mt-1">
+                  Important account and security telemetry packets.
+                </p>
+              </div>
+              <Switch
+                className="data-[state=checked]:bg-primary"
+                checked={settings?.email_alerts ?? false}
+                onCheckedChange={(v) =>
+                  setSettings((s) => {
+                    const next = s ? { ...s, email_alerts: v } : s;
+                    void (async () => {
+                      if (!next) return;
+                      try { await fetch("/api/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email_alerts: v }) }); } catch {}
+                    })();
+                    return next;
+                  })
+                }
+              />
             </div>
-            <Switch
-              checked={settings?.email_alerts ?? false}
-              onCheckedChange={(v) =>
-                setSettings((s) => {
-                  const next = s ? { ...s, email_alerts: v } : s;
-                  void (async () => {
-                    if (!next) return;
-                    try {
-                      await fetch("/api/settings", {
-                        method: "PATCH",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ email_alerts: v }),
-                      });
-                    } catch {
-                      // silent fail, UI already updated
-                    }
-                  })();
-                  return next;
-                })
-              }
-            />
-          </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-4">
-            <div>
-              <p className="text-sm font-medium">Job Notifications</p>
-              <p className="text-xs text-muted-foreground">
-                New job matches based on your profile.
-              </p>
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-surface-container p-5 hover:bg-surface-container-low transition-colors group">
+              <div>
+                <p className="font-display text-lg font-bold">Opportunity Ping</p>
+                <p className="text-sm text-muted-foreground font-medium mt-1">
+                  Immediate alerts for high-probability job matches.
+                </p>
+              </div>
+              <Switch
+                className="data-[state=checked]:bg-secondary"
+                checked={settings?.job_notifications ?? false}
+                onCheckedChange={(v) =>
+                  setSettings((s) => {
+                    const next = s ? { ...s, job_notifications: v } : s;
+                    void (async () => {
+                      if (!next) return;
+                      try { await fetch("/api/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_notifications: v }) }); } catch {}
+                    })();
+                    return next;
+                  })
+                }
+              />
             </div>
-            <Switch
-              checked={settings?.job_notifications ?? false}
-              onCheckedChange={(v) =>
-                setSettings((s) => {
-                  const next = s ? { ...s, job_notifications: v } : s;
-                  void (async () => {
-                    if (!next) return;
-                    try {
-                      await fetch("/api/settings", {
-                        method: "PATCH",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ job_notifications: v }),
-                      });
-                    } catch {
-                      // silent fail
-                    }
-                  })();
-                  return next;
-                })
-              }
-            />
-          </div>
 
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background/40 p-4">
-            <div>
-              <p className="text-sm font-medium">Weekly Digest</p>
-              <p className="text-xs text-muted-foreground">
-                A weekly summary of progress and suggested next steps.
-              </p>
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-border/50 bg-surface-container p-5 hover:bg-surface-container-low transition-colors group">
+              <div>
+                <p className="font-display text-lg font-bold">Weekly Diagnostics</p>
+                <p className="text-sm text-muted-foreground font-medium mt-1">
+                  Executive summary of simulation results and analytics.
+                </p>
+              </div>
+              <Switch
+                className="data-[state=checked]:bg-tertiary"
+                checked={settings?.weekly_digest ?? false}
+                onCheckedChange={(v) =>
+                  setSettings((s) => {
+                    const next = s ? { ...s, weekly_digest: v } : s;
+                    void (async () => {
+                      if (!next) return;
+                      try { await fetch("/api/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ weekly_digest: v }) }); } catch {}
+                    })();
+                    return next;
+                  })
+                }
+              />
             </div>
-            <Switch
-              checked={settings?.weekly_digest ?? false}
-              onCheckedChange={(v) =>
-                setSettings((s) => {
-                  const next = s ? { ...s, weekly_digest: v } : s;
-                  void (async () => {
-                    if (!next) return;
-                    try {
-                      await fetch("/api/settings", {
-                        method: "PATCH",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ weekly_digest: v }),
-                      });
-                    } catch {
-                      // silent fail
-                    }
-                  })();
-                  return next;
-                })
-              }
-            />
-          </div>
 
-          <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/logout">Logout</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="pt-6 border-t border-border/50 flex justify-end">
+              <Button asChild className="h-12 rounded-full px-8 bg-destructive/10 text-destructive font-bold hover:bg-destructive hover:text-destructive-foreground transition-all">
+                <Link href="/logout">Logout Uplink</Link>
+              </Button>
+            </div>
+         </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Danger zone</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Delete account</p>
-            <p className="text-sm text-muted-foreground">
-              Permanently delete your account and all associated data.
-            </p>
-          </div>
-          <Button variant="outline" onClick={() => setOpenDelete(true)}>
-            Delete account
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="glass-panel rounded-3xl border border-destructive/20 bg-destructive/5 overflow-hidden">
+         <div className="p-6 md:p-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+           <div className="space-y-1">
+             <h3 className="font-display text-2xl font-bold tracking-tight text-destructive">System Erase</h3>
+             <p className="text-sm font-medium opacity-80 text-foreground">
+               Permanently wipe telemetry and neural profiles from sector.
+             </p>
+           </div>
+           <Button variant="destructive" onClick={() => setOpenDelete(true)} className="rounded-full shadow-lg shadow-destructive/20 font-bold tracking-wide">
+             Initialize Protocol
+           </Button>
+         </div>
+      </div>
 
       <Dialog open={openDelete} onOpenChange={setOpenDelete}>
-        <DialogHeader>
-          <DialogTitle>Delete account</DialogTitle>
-          <DialogDescription>
-            Type <span className="font-medium">delete</span> to confirm.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogContent className="space-y-3">
-          <Input value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+        <DialogContent className="glass-panel border-border/50 bg-background/90 backdrop-blur-2xl rounded-3xl p-8 max-w-md shadow-2xl">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="font-display text-2xl font-bold text-destructive">Wipe Protocol Authorized</DialogTitle>
+            <DialogDescription className="text-sm font-medium text-foreground/80 mt-2">
+              Type <span className="font-mono font-bold text-destructive select-all">delete</span> to override safety protocols.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input 
+                 value={confirm} 
+                 onChange={(e) => setConfirm(e.target.value)} 
+                 placeholder="Awaiting override sequence..."
+                 className="h-12 rounded-full border-destructive/30 bg-destructive/5 text-destructive font-mono font-bold text-center tracking-widest focus-visible:ring-destructive/50 placeholder:text-destructive/30"
+            />
+          </div>
+          <DialogFooter className="mt-2 outline-none border-none">
+             <div className="flex items-center gap-3 w-full">
+                <Button
+                  variant="ghost"
+                  className="flex-1 rounded-full text-foreground hover:bg-surface-container"
+                  onClick={() => {
+                    setOpenDelete(false);
+                    setConfirm("");
+                  }}
+                >
+                  Abort
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 rounded-full font-bold shadow-lg shadow-destructive/20"
+                  onClick={() => void deleteAccount()}
+                  disabled={!deleteEnabled || saving}
+                >
+                  Confirm Erase
+                </Button>
+             </div>
+          </DialogFooter>
         </DialogContent>
-        <DialogFooter
-          onClose={() => {
-            setOpenDelete(false);
-            setConfirm("");
-          }}
-        >
-          <Button
-            variant="destructive"
-            onClick={() => void deleteAccount()}
-            disabled={!deleteEnabled || saving}
-          >
-            Delete
-          </Button>
-        </DialogFooter>
       </Dialog>
     </div>
   );

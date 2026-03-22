@@ -82,18 +82,18 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen bg-background text-foreground font-sans">
       {/* Sidebar (desktop) - FIXED Position */}
-      <aside className="hidden w-60 border-r border-border bg-card/10 px-4 py-6 md:fixed md:inset-y-0 md:left-0 md:flex md:flex-col md:gap-6">
-        <div className="space-y-1">
-          <Link href="/dashboard" className="block text-sm font-semibold">
-            ASPIRELY
+      <aside className="hidden w-64 border-r border-border/50 bg-surface-container-low/50 backdrop-blur-xl px-4 py-6 md:fixed md:inset-y-0 md:left-0 md:flex md:flex-col md:gap-8 z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <div className="space-y-1 pl-2">
+          <Link href="/dashboard" className="block font-display text-2xl font-bold tracking-tight text-primary hover:opacity-80 transition-opacity">
+            Aspirely<span className="text-foreground">.</span>
           </Link>
-          <p className="text-xs text-muted-foreground">
-            Your AI Career Advisor
+          <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground">
+            AI Career Advisor
           </p>
         </div>
-        <nav className="flex flex-1 flex-col gap-1 text-sm">
+        <nav className="flex flex-1 flex-col gap-2 text-sm font-medium">
           {primaryNav.map((item) => {
             const active = pathname === item.href;
             return (
@@ -101,10 +101,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center rounded-md px-2 py-1.5 transition-colors",
+                  "flex items-center rounded-xl px-4 py-3 transition-all duration-200",
                   active
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]"
+                    : "text-muted-foreground hover:bg-surface-container hover:text-foreground",
                 )}
               >
                 {item.label}
@@ -112,11 +112,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <div className="mt-auto flex items-center justify-between gap-2 text-xs text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between gap-3 rounded-2xl bg-surface-container p-3 border border-border/50">
           <ThemeToggle />
           <Link
             href="/logout"
-            className="rounded-md px-2 py-1 text-xs hover:bg-muted hover:text-foreground"
+            className="flex-1 text-center rounded-xl bg-destructive/10 px-3 py-2 text-xs font-bold text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all"
           >
             Logout
           </Link>
@@ -124,50 +124,50 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Main content - ADJUSTED padding for fixed sidebar */}
-      <div className="flex min-h-screen flex-1 flex-col pb-16 md:pb-0 md:pl-60">
+      <div className="flex min-h-screen flex-1 flex-col pb-20 md:pb-0 md:pl-64">
         {/* Top bar + breadcrumbs */}
-        <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur">
-          <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between px-4">
+        <header className="sticky top-0 z-20 border-b border-border/50 bg-background/80 backdrop-blur-md">
+          <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6 pt-2">
             <div className="flex flex-col">
-              <nav className="text-xs text-muted-foreground">
-                <ol className="flex items-center gap-1">
+              <nav className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1">
+                <ol className="flex items-center gap-2">
                   <li>
                     <Link
                       href="/dashboard"
-                      className="hover:text-foreground hover:underline"
+                      className="hover:text-primary transition-colors hover:underline"
                     >
                       Home
                     </Link>
                   </li>
-                  <li className="text-muted-foreground">/</li>
-                  <li className="font-medium text-foreground">
+                  <li className="text-border">/</li>
+                  <li className="text-foreground">
                     {headerConfig.title}
                   </li>
                 </ol>
               </nav>
-              <div className="flex items-baseline gap-2">
-                <h1 className="text-base font-semibold leading-tight">
+              <div className="flex items-baseline gap-3">
+                <h1 className="font-display text-xl font-bold leading-tight relative top-0.5">
                   {headerConfig.title}
                 </h1>
                 {headerConfig.description ? (
-                  <p className="hidden text-xs text-muted-foreground sm:block">
+                  <p className="hidden text-xs font-medium text-muted-foreground sm:block relative top-0.5">
                     {headerConfig.description}
                   </p>
                 ) : null}
               </div>
             </div>
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex items-center gap-2">
               <ThemeToggle />
             </div>
           </div>
         </header>
 
-        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6">
+        <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-8 md:px-8">
           {children}
         </main>
 
         {/* Bottom nav (mobile) */}
-        <nav className="fixed inset-x-0 bottom-0 z-20 flex h-14 items-center justify-between border-t border-border bg-background/95 px-3 text-xs md:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-between border-t border-border/50 bg-background/80 backdrop-blur-xl px-2 text-[10px] font-bold uppercase tracking-wider md:hidden shadow-[0_-4px_24px_rgba(0,0,0,0.05)]">
           {primaryNav.map((item) => {
             const active = pathname === item.href;
             return (
@@ -175,9 +175,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-1 py-1 transition-colors",
+                  "flex flex-1 flex-col items-center justify-center gap-1 rounded-xl p-2 transition-all duration-200",
                   active
-                    ? "text-foreground"
+                    ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
