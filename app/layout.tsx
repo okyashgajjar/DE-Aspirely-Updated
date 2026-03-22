@@ -3,6 +3,7 @@ import { Epilogue, Manrope } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { AuthRecoveryListener } from "@/components/auth-recovery-listener";
 
 const epilogue = Epilogue({
   variable: "--font-epilogue",
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${epilogue.variable} ${manrope.variable} antialiased font-sans`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthRecoveryListener />
           <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>
