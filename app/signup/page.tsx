@@ -6,11 +6,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 
 import { ArrowLeft } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -32,31 +31,42 @@ export default function SignupPage() {
   async function onSubmit(values: SignupValues) {
     setSubmitting(true);
     setError(null);
-    const supabase = getSupabaseBrowserClient();
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    // 1. Register the user
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Sign up failed. Please try again.");
+      setSubmitting(false);
+      return;
+    }
+
+    // 2. Auto sign-in after registration
+    const signInRes = await signIn("credentials", {
       email: values.email,
       password: values.password,
+      redirect: false,
     });
 
     setSubmitting(false);
 
-    if (signUpError) {
-      setError(signUpError.message);
+    if (signInRes?.error) {
+      setError("Account created but auto-login failed. Please log in.");
+      router.push("/login");
       return;
     }
 
     router.push("/onboarding");
+    router.refresh();
   }
 
   async function signInWithGoogle() {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
-      },
-    });
+    await signIn("google", { callbackUrl: "/onboarding" });
   }
 
   return (
@@ -117,9 +127,7 @@ export default function SignupPage() {
 
           <div className="mt-8 flex items-center gap-4">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-              or
-            </span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">or</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
@@ -134,10 +142,7 @@ export default function SignupPage() {
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link
-              href="/login"
-              className="font-semibold text-primary underline-offset-4 hover:underline transition-colors"
-            >
+            <Link href="/login" className="font-semibold text-primary underline-offset-4 hover:underline transition-colors">
               Log in
             </Link>
           </p>
@@ -146,14 +151,11 @@ export default function SignupPage() {
 
       {/* Right Side: Visual */}
       <div className="hidden md:flex w-1/2 relative bg-surface-container items-center justify-center overflow-hidden border-l border-border">
-        {/* Abstract Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-tr from-secondary/10 via-transparent to-primary/10" />
         <div className="absolute bottom-1/4 right-1/4 h-[500px] w-[500px] rounded-full bg-secondary/20 blur-[120px] animate-pulse pointer-events-none mix-blend-screen" />
-        
-        {/* Glassmorphic Badge */}
         <div className="glass-panel rounded-3xl p-12 max-w-md relative z-10 text-center border border-secondary/20 shadow-2xl">
           <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-gradient-to-bl from-secondary to-primary flex items-center justify-center shadow-inner">
-             <div className="h-8 w-8 rounded-full bg-background/50 border border-background/20 backdrop-blur-md" />
+            <div className="h-8 w-8 rounded-full bg-background/50 border border-background/20 backdrop-blur-md" />
           </div>
           <h2 className="font-display text-3xl font-bold mb-4">Precision Driven.</h2>
           <p className="text-muted-foreground leading-relaxed text-sm">
@@ -164,4 +166,3 @@ export default function SignupPage() {
     </main>
   );
 }
-

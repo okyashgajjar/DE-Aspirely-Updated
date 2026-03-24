@@ -24,12 +24,21 @@ function Waveform({ color = "bg-accent/70" }: { color?: string }) {
   );
 }
 
+interface ISpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface ISpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
+
 export function VoiceUI() {
   const [answer, setAnswer] = useState("");
   const [micOn, setMicOn] = useState(false);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const [userSpeaking, setUserSpeaking] = useState(false);
-  const recognitionRef = useRef<any | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const speakingRef = useRef(false);
 
   const {
@@ -45,23 +54,17 @@ export function VoiceUI() {
 
   const voiceSupported = useMemo(() => {
     if (typeof window === "undefined") return false;
-    const w = window as Window & {
-      SpeechRecognition?: unknown;
-      webkitSpeechRecognition?: unknown;
-      speechSynthesis?: unknown;
-    };
     return Boolean(
-      w.SpeechRecognition || w.webkitSpeechRecognition || w.speechSynthesis,
+      window.SpeechRecognition || window.webkitSpeechRecognition || window.speechSynthesis,
     );
   }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const w = window as any;
-    const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRec) return;
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRec();
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = "en-US";
@@ -73,8 +76,8 @@ export function VoiceUI() {
     recognition.onspeechstart = () => {
       setUserSpeaking(true);
       // FASTER INTERRUPTION: If AI is talking, stop it the moment sound is detected
-      if (speakingRef.current && w.speechSynthesis?.speaking) {
-        w.speechSynthesis.cancel();
+      if (speakingRef.current && window.speechSynthesis?.speaking) {
+        window.speechSynthesis.cancel();
         speakingRef.current = false;
         setAiSpeaking(false);
       }
@@ -84,22 +87,23 @@ export function VoiceUI() {
       setUserSpeaking(false);
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: ISpeechRecognitionEvent) => {
       // Backup interruption in case onspeechstart was missed
-      if (speakingRef.current && w.speechSynthesis?.speaking) {
-        w.speechSynthesis.cancel();
+      if (speakingRef.current && window.speechSynthesis?.speaking) {
+        window.speechSynthesis.cancel();
         speakingRef.current = false;
         setAiSpeaking(false);
       }
 
-      const transcriptText = Array.from(event.results)
-        .map((r: any) => r[0].transcript)
+      const results = event.results;
+      const transcriptText = Array.from(results)
+        .map((r) => (r as SpeechRecognitionResult)[0].transcript)
         .join(" ");
 
       setAnswer(transcriptText);
 
       // Simple silence detection to submit
-      const result = event.results[event.results.length - 1];
+      const result = results[results.length - 1];
       if (result.isFinal) {
         void submitTextAnswer(result[0].transcript);
       }
@@ -118,7 +122,7 @@ export function VoiceUI() {
       }
     };
 
-    recognition.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       if (event.error === 'no-speech') return;
       console.error("Speech Recognition Error:", event.error);
     };
@@ -134,8 +138,7 @@ export function VoiceUI() {
 
   useEffect(() => {
     if (!currentQuestion || typeof window === "undefined") return;
-    const w = window as any;
-    if (!w.speechSynthesis) return;
+    if (!window.speechSynthesis) return;
 
     const utterance = new SpeechSynthesisUtterance(currentQuestion);
     utterance.onstart = () => {

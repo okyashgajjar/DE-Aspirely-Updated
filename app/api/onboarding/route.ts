@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { getServerEnv } from "@/lib/validations/env";
+import { db } from "@/db";
+import { users, onboardingProfiles, skillGaps, analyticsEvents } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { getSessionUserId } from "@/lib/session";
 import {
   onboardingRequestSchema,
   type OnboardingRequest,
@@ -14,17 +16,14 @@ import {
 } from "@/lib/skills";
 
 export async function POST(request: Request) {
-  const supabase = await getSupabaseServerClient();
-  const env = getServerEnv();
+  const userId = await getSessionUserId();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const parseResult = onboardingRequestSchema.safeParse(body);
@@ -36,221 +35,112 @@ export async function POST(request: Request) {
   }
 
   const payload: OnboardingRequest = parseResult.data;
+  const { name, location, education, skills = [], experience_level, experience_history, interests = [], goals = [] } = payload;
+  const now = new Date();
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  // Update user profile
+  await db.update(users)
+    .set({ name, location, bio: experience_history })
+    .where(eq(users.id, userId));
 
-  if (userError || !user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // Upsert onboarding profile
+  const existingOnboarding = await db.query.onboardingProfiles.findFirst({
+    where: eq(onboardingProfiles.userId, userId),
+  });
 
-  const {
-    name,
-    location,
-    education,
-    skills = [],
-    experience_level,
-    experience_history,
-    interests = [],
-    goals = [],
-  } = payload;
-
-  const nowIso = new Date().toISOString();
-
-  const { data: existingUser } = await supabase
-    .from("users")
-    .select("id")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  const userPayload = {
-    id: user.id,
-    email: user.email ?? "",
-    name,
-    location,
-    bio: experience_history,
-  };
-
-  let upsertUserError;
-
-  if (existingUser) {
-    const { error } = await supabase
-      .from("users")
-      .update(userPayload)
-      .eq("id", user.id);
-    upsertUserError = error;
-  } else {
-    const { error } = await supabase
-      .from("users")
-      .insert(userPayload);
-    upsertUserError = error;
-  }
-
-  if (upsertUserError) {
-    console.error("User upsert error:", upsertUserError);
-    return NextResponse.json(
-      { error: "Failed to save user profile" },
-      { status: 500 },
-    );
-  }
-
-  const { data: existingOnboarding } = await supabase
-    .from("onboarding_profiles")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const payloadOnboarding = {
-    user_id: user.id,
-    skills,
-    interests,
-    experience_level,
-    education,
-    goals,
-    completed_at: nowIso,
-  };
-
-  let onboardingInsert;
-  let onboardingError;
-
+  let onboardingRecord;
   if (existingOnboarding) {
-    const { data, error } = await supabase
-      .from("onboarding_profiles")
-      .update(payloadOnboarding)
-      .eq("user_id", user.id)
-      .select("*")
-      .single();
-    onboardingInsert = data;
-    onboardingError = error;
+    [onboardingRecord] = await db.update(onboardingProfiles)
+      .set({ skills, interests, experience_level, education, goals, completed_at: now })
+      .where(eq(onboardingProfiles.id, existingOnboarding.id))
+      .returning();
   } else {
-    const { data, error } = await supabase
-      .from("onboarding_profiles")
-      .insert(payloadOnboarding)
-      .select("*")
-      .single();
-    onboardingInsert = data;
-    onboardingError = error;
+    [onboardingRecord] = await db.insert(onboardingProfiles)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        skills,
+        interests,
+        experience_level,
+        education,
+        goals,
+        completed_at: now
+      })
+      .returning();
   }
 
-  if (onboardingError || !onboardingInsert) {
-    console.error("Onboarding insert error:", onboardingError);
-    return NextResponse.json(
-      { error: "Failed to save onboarding profile" },
-      { status: 500 },
-    );
-  }
-
-  let jobSkillGap:
-    | {
-      user_skills: string[];
-      job_skills: string[];
-      missing_skills: string[];
-      similarity_score: number;
-      source_job_ids: string[];
-    }
-    | null = null;
-
+  // Compute skill gaps
+  let jobSkillGap = null;
   try {
     const nonEmptySkills = skills.map(normalizeSkill).filter(Boolean);
-    const queryTokens =
-      nonEmptySkills.length > 0
-        ? nonEmptySkills
-        : goals.length > 0
-          ? goals
-          : interests;
+    const queryTokens = nonEmptySkills.length > 0 ? nonEmptySkills : goals.length > 0 ? goals : interests;
+    const whatQuery = queryTokens.length > 0 ? queryTokens.join(" ") : "software engineer";
 
-    const whatQuery =
-      queryTokens.length > 0 ? queryTokens.join(" ") : "software engineer";
-
-    const { jobs } = await fetchAdzunaJobs({
-      what: whatQuery,
-      where: location,
-      resultsPerPage: 5,
-    });
-
+    const { jobs } = await fetchAdzunaJobs({ what: whatQuery, where: location, resultsPerPage: 5 });
     const jobSkills = extractSkillsFromJobs(jobs);
-    const userSkillsNorm = Array.from(
-      new Set(skills.map(normalizeSkill).filter(Boolean)),
-    );
-    const jobSkillsNorm = Array.from(
-      new Set(jobSkills.map(normalizeSkill).filter(Boolean)),
-    );
-
+    const userSkillsNorm = Array.from(new Set(skills.map(normalizeSkill).filter(Boolean)));
+    const jobSkillsNorm = Array.from(new Set(jobSkills.map(normalizeSkill).filter(Boolean)));
     const similarity = cosineSimilarity(userSkillsNorm, jobSkillsNorm);
+    const missingSkills = jobSkillsNorm.filter(s => !userSkillsNorm.includes(s));
+    const sourceJobIds = jobs.map(j => j.id);
 
-    const missingSkills = jobSkillsNorm.filter(
-      (skill) => !userSkillsNorm.includes(skill),
-    );
+    await db.delete(skillGaps).where(eq(skillGaps.userId, userId));
+    const [gapRow] = await db.insert(skillGaps)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        user_skills: userSkillsNorm,
+        job_skills: jobSkillsNorm,
+        missing_skills: missingSkills,
+        similarity_score: similarity,
+        source_job_ids: sourceJobIds,
+        computed_at: now,
+      })
+      .returning();
 
-    const sourceJobIds = jobs.map((j) => j.id);
-
-    await supabase.from("skill_gaps").delete().eq("user_id", user.id);
-
-    const { data: skillGapRow, error: skillGapError } = await supabase
-      .from("skill_gaps")
-      .insert(
-        {
-          user_id: user.id,
-          user_skills: userSkillsNorm,
-          job_skills: jobSkillsNorm,
-          missing_skills: missingSkills,
-          similarity_score: similarity,
-          source_job_ids: sourceJobIds,
-          computed_at: nowIso,
-        }
-      )
-      .select("*")
-      .single();
-
-    if (!skillGapError && skillGapRow) {
-      jobSkillGap = {
-        user_skills: skillGapRow.user_skills ?? userSkillsNorm,
-        job_skills: skillGapRow.job_skills ?? jobSkillsNorm,
-        missing_skills: skillGapRow.missing_skills ?? missingSkills,
-        similarity_score: skillGapRow.similarity_score ?? similarity,
-        source_job_ids: skillGapRow.source_job_ids ?? sourceJobIds,
-      };
-    }
-  } catch {
+    jobSkillGap = {
+      user_skills: gapRow.user_skills as string[],
+      job_skills: gapRow.job_skills as string[],
+      missing_skills: gapRow.missing_skills as string[],
+      similarity_score: gapRow.similarity_score,
+      source_job_ids: gapRow.source_job_ids as string[],
+    };
+  } catch (err) {
+    console.error("Onboarding Gap recompute error", err);
     jobSkillGap = null;
   }
 
-  await supabase.from("analytics_events").insert({
-    user_id: user.id,
+  // Log analytics event
+  await db.insert(analyticsEvents).values({
+    id: crypto.randomUUID(),
+    userId,
     event_type: "onboarding_completed",
-    metadata: {
-      env: env.SUPABASE_PROJECT_URL,
-      skills_count: skills.length,
-    },
+    metadata: { skills_count: skills.length },
   });
 
   const responseBody: OnboardingResponse = {
     onboarding_profile: {
-      id: onboardingInsert.id,
-      user_id: onboardingInsert.user_id,
-      skills: onboardingInsert.skills ?? [],
-      interests: onboardingInsert.interests ?? [],
-      experience_level: onboardingInsert.experience_level,
-      education: onboardingInsert.education,
-      goals: onboardingInsert.goals ?? [],
-      completed_at: onboardingInsert.completed_at,
+      id: onboardingRecord.id,
+      user_id: onboardingRecord.userId,
+      skills: onboardingRecord.skills as string[] ?? [],
+      interests: onboardingRecord.interests as string[] ?? [],
+      experience_level: onboardingRecord.experience_level,
+      education: onboardingRecord.education,
+      goals: onboardingRecord.goals as string[] ?? [],
+      completed_at: onboardingRecord.completed_at?.toISOString() ?? null,
     },
     skill_gap: jobSkillGap
       ? {
-        user_id: user.id,
-        user_skills: jobSkillGap.user_skills,
-        job_skills: jobSkillGap.job_skills,
-        missing_skills: jobSkillGap.missing_skills,
-        similarity_score: jobSkillGap.similarity_score,
-        source_job_ids: jobSkillGap.source_job_ids,
-        computed_at: nowIso,
-      }
+          user_id: userId,
+          user_skills: jobSkillGap.user_skills,
+          job_skills: jobSkillGap.job_skills,
+          missing_skills: jobSkillGap.missing_skills,
+          similarity_score: jobSkillGap.similarity_score,
+          source_job_ids: jobSkillGap.source_job_ids,
+          computed_at: now.toISOString(),
+        }
       : null,
   };
 
   return NextResponse.json(responseBody, { status: 201 });
 }
-
-

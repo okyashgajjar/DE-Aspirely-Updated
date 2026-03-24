@@ -1,150 +1,69 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { JobsApiResponse, JobListing } from "@/types";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { db } from "@/db";
+import { onboardingProfiles, users } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { getSessionUserId } from "@/lib/session";
 import { fetchAdzunaJobs } from "@/lib/adzuna";
+import type { JobListing } from "@/types";
 
 type Mode = "skills" | "profile" | "location";
 
-async function getAuthUserAndProfile() {
-  const supabase = await getSupabaseServerClient();
-
-  const [
-    {
-      data: { user },
-      error: userError,
-    },
-    { data: onboardingProfile },
-    { data: userRow },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("onboarding_profiles")
-      .select("skills, experience_level, education, goals, interests")
-      .order("completed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase.from("users").select("location").limit(1).maybeSingle(),
-  ]);
-
-  if (userError || !user) {
-    return { supabase, userId: null as string | null, onboardingProfile: null, userLocation: null as string | null };
-  }
-
-  return {
-    supabase,
-    userId: user.id as string,
-    onboardingProfile,
-    userLocation: (userRow?.location as string | null) ?? null,
-  };
-}
-
-function buildAdzunaQuery(
-  mode: Mode | null,
-  onboardingProfile: {
-    skills?: string[] | null;
-    experience_level?: string | null;
-    education?: string | null;
-    goals?: string[] | null;
-  } | null,
-  userLocation: string | null,
-  explicitLocation: string | null,
-): { what: string; where?: string } {
-  const skills = (onboardingProfile?.skills ?? []) as string[];
-  const goals = (onboardingProfile?.goals ?? []) as string[];
-  const experience = onboardingProfile?.experience_level ?? "";
-  const education = onboardingProfile?.education ?? "";
-
-  const baseTokens: string[] = [];
-
-  if (skills.length > 0) {
-    baseTokens.push(...skills);
-  }
-
-  const effectiveMode: Mode =
-    mode ?? (skills.length > 0 ? "skills" : "profile");
-
-  if (effectiveMode === "profile") {
-    if (experience) baseTokens.push(experience);
-    if (education) baseTokens.push(education);
-    if (goals.length > 0) baseTokens.push(...goals);
-  }
-
-  const what =
-    baseTokens.length > 0
-      ? baseTokens.join(" ")
-      : "software engineer";
-
-  const where =
-    effectiveMode === "location"
-      ? explicitLocation?.trim() || userLocation || undefined
-      : undefined;
-
-  return { what, where };
-}
-
 export async function GET(req: NextRequest) {
   try {
+    const userId = await getSessionUserId();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
     const url = new URL(req.url);
-    const searchParams = url.searchParams;
-
-    const modeParam = searchParams.get("mode");
-    const mode: Mode | null =
-      modeParam === "skills" || modeParam === "profile" || modeParam === "location"
-        ? modeParam
-        : null;
-
-    const pageRaw = searchParams.get("page");
+    const modeParam = url.searchParams.get("mode");
+    const mode: Mode | null = (modeParam === "skills" || modeParam === "profile" || modeParam === "location") ? modeParam : null;
+    const pageRaw = url.searchParams.get("page");
     const page = Number.isNaN(Number(pageRaw)) || !pageRaw ? 1 : Math.max(1, Number(pageRaw));
+    const explicitLocation = url.searchParams.get("location");
 
-    const explicitLocation = searchParams.get("location");
+    const [profile, userRow] = await Promise.all([
+      db.query.onboardingProfiles.findFirst({
+        where: eq(onboardingProfiles.userId, userId),
+        orderBy: [desc(onboardingProfiles.completed_at)],
+      }),
+      db.query.users.findFirst({
+        where: eq(users.id, userId),
+      }),
+    ]);
 
-    const { supabase, userId, onboardingProfile, userLocation } =
-      await getAuthUserAndProfile();
+    const skills = (profile?.skills as string[] ?? []);
+    const goals = (profile?.goals as string[] ?? []);
+    const experience = profile?.experience_level ?? "";
+    const education = profile?.education ?? "";
+    const userLocation = userRow?.location ?? null;
 
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+    const baseTokens: string[] = [];
+    if (skills.length > 0) baseTokens.push(...skills);
+    const effectiveMode: Mode = mode ?? (skills.length > 0 ? "skills" : "profile");
+
+    if (effectiveMode === "profile") {
+      if (experience) baseTokens.push(experience);
+      if (education) baseTokens.push(education);
+      if (goals.length > 0) baseTokens.push(...goals);
     }
 
-    const { what, where } = buildAdzunaQuery(
-      mode,
-      onboardingProfile,
-      userLocation,
-      explicitLocation,
-    );
+    const what = baseTokens.length > 0 ? baseTokens.join(" ") : "software engineer";
+    const where = effectiveMode === "location" ? explicitLocation?.trim() || userLocation || undefined : undefined;
 
     let jobs: JobListing[] = [];
     let total = 0;
 
     try {
-      const result = await fetchAdzunaJobs({
-        what,
-        where,
-        resultsPerPage: 10,
-        page,
-      });
+      const result = await fetchAdzunaJobs({ what, where, resultsPerPage: 10, page });
       jobs = result.jobs;
       total = result.total;
     } catch (err) {
       console.error("Adzuna fetch failed", err);
-      return NextResponse.json(
-        { error: "Failed to fetch jobs from Adzuna" },
-        { status: 502 },
-      );
+      return NextResponse.json({ error: "Failed to fetch jobs from Adzuna" }, { status: 502 });
     }
 
-    const responseBody: JobsApiResponse = {
-      jobs,
-      total,
-      page,
-    };
-
-    return NextResponse.json(responseBody);
+    return NextResponse.json({ jobs, total, page });
   } catch (error) {
     console.error("GET /api/jobs error", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

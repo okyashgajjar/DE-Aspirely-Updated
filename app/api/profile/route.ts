@@ -1,397 +1,203 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { SkillGap, User, OnboardingProfile } from "@/types";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { db } from "@/db";
+import { users, onboardingProfiles, skillGaps, chatHistory, analyticsEvents, mockInterviews, settings } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { getSessionUserId } from "@/lib/session";
 import { profileUpdateSchema, type ProfileUpdateRequest } from "@/lib/validations/profile";
 import { fetchAdzunaJobs } from "@/lib/adzuna";
-import {
-  cosineSimilarity,
-  extractSkillsFromJobs,
-  normalizeSkill,
-} from "@/lib/skills";
+import { cosineSimilarity, extractSkillsFromJobs, normalizeSkill } from "@/lib/skills";
 
-async function getAuthUser() {
-  const supabase = await getSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return { supabase, userId: null as string | null };
-  }
-
-  return { supabase, userId: user.id as string };
-}
-
-async function loadFullProfile(
-  supabase: Awaited<ReturnType<typeof getSupabaseServerClient>>,
-  userId: string,
-): Promise<{
-  user: User | null;
-  onboarding_profile: OnboardingProfile | null;
-  skill_gap: SkillGap | null;
-}> {
+async function loadFullProfile(userId: string) {
   const [userRow, onboardingRow, gapRow] = await Promise.all([
-    supabase
-      .from("users")
-      .select("id, email, name, avatar, bio, location, created_at, deleted_at")
-      .eq("id", userId)
-      .maybeSingle(),
-    supabase
-      .from("onboarding_profiles")
-      .select(
-        "id, user_id, skills, interests, experience_level, education, goals, completed_at",
-      )
-      .eq("user_id", userId)
-      .order("completed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("skill_gaps")
-      .select(
-        "user_id, user_skills, job_skills, missing_skills, similarity_score, source_job_ids, computed_at",
-      )
-      .eq("user_id", userId)
-      .order("computed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+    db.query.users.findFirst({
+      where: eq(users.id, userId),
+    }),
+    db.query.onboardingProfiles.findFirst({
+      where: eq(onboardingProfiles.userId, userId),
+      orderBy: [desc(onboardingProfiles.completed_at)],
+    }),
+    db.query.skillGaps.findFirst({
+      where: eq(skillGaps.userId, userId),
+      orderBy: [desc(skillGaps.computed_at)],
+    }),
   ]);
 
-  const userData = userRow.data
-    ? ({
-      id: userRow.data.id,
-      email: userRow.data.email,
-      name: userRow.data.name,
-      avatar: userRow.data.avatar,
-      bio: userRow.data.bio,
-      location: userRow.data.location,
-      created_at: userRow.data.created_at,
-      deleted_at: userRow.data.deleted_at,
-    } satisfies User)
-    : null;
+  const user = userRow ? {
+    id: userRow.id,
+    email: userRow.email,
+    name: userRow.name,
+    avatar: userRow.avatar,
+    bio: userRow.bio,
+    location: userRow.location,
+    created_at: userRow.created_at.toISOString(),
+    deleted_at: userRow.deleted_at?.toISOString() ?? null,
+  } : null;
 
-  const onboarding =
-    onboardingRow.data &&
-    ({
-      id: onboardingRow.data.id,
-      user_id: onboardingRow.data.user_id,
-      skills: onboardingRow.data.skills ?? [],
-      interests: onboardingRow.data.interests ?? [],
-      experience_level: onboardingRow.data.experience_level,
-      education: onboardingRow.data.education,
-      goals: onboardingRow.data.goals ?? [],
-      completed_at: onboardingRow.data.completed_at,
-    } satisfies OnboardingProfile);
+  const onboardingProfile = onboardingRow ? {
+    id: onboardingRow.id,
+    user_id: onboardingRow.userId,
+    skills: onboardingRow.skills as string[] ?? [],
+    interests: onboardingRow.interests as string[] ?? [],
+    experience_level: onboardingRow.experience_level,
+    education: onboardingRow.education,
+    goals: onboardingRow.goals as string[] ?? [],
+    completed_at: onboardingRow.completed_at?.toISOString() ?? null,
+  } : null;
 
-  const gap =
-    gapRow.data &&
-    ({
-      user_id: gapRow.data.user_id,
-      user_skills: gapRow.data.user_skills ?? [],
-      job_skills: gapRow.data.job_skills ?? [],
-      missing_skills: gapRow.data.missing_skills ?? [],
-      similarity_score: gapRow.data.similarity_score ?? 0,
-      source_job_ids: gapRow.data.source_job_ids ?? [],
-      computed_at: gapRow.data.computed_at,
-    } satisfies SkillGap);
+  const skill_gap = gapRow ? {
+    user_id: gapRow.userId,
+    user_skills: gapRow.user_skills as string[] ?? [],
+    job_skills: gapRow.job_skills as string[] ?? [],
+    missing_skills: gapRow.missing_skills as string[] ?? [],
+    similarity_score: gapRow.similarity_score,
+    source_job_ids: gapRow.source_job_ids as string[] ?? [],
+    computed_at: gapRow.computed_at.toISOString(),
+  } : null;
 
-  return {
-    user: userData,
-    onboarding_profile: onboarding ?? null,
-    skill_gap: gap ?? null,
-  };
+  return { user, onboarding_profile: onboardingProfile, skill_gap };
 }
 
 export async function GET() {
   try {
-    const { supabase, userId } = await getAuthUser();
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const profile = await loadFullProfile(supabase, userId);
+    const userId = await getSessionUserId();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+    const profile = await loadFullProfile(userId);
     return NextResponse.json(profile);
   } catch (error) {
     console.error("GET /api/profile error", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { supabase, userId } = await getAuthUser();
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const userId = await getSessionUserId();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
     let rawBody: unknown;
-    try {
-      rawBody = await req.json();
-    } catch {
-      return new NextResponse("Invalid JSON body", { status: 400 });
-    }
+    try { rawBody = await req.json(); }
+    catch { return new NextResponse("Invalid JSON body", { status: 400 }); }
 
     const parsed = profileUpdateSchema.safeParse(rawBody);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid request", details: parsed.error.flatten() },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
     }
 
     const body: ProfileUpdateRequest = parsed.data;
-
-    const [userRow, onboardingRow] = await Promise.all([
-      supabase
-        .from("users")
-        .select("id, email, name, avatar, bio, location, created_at, deleted_at")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabase
-        .from("onboarding_profiles")
-        .select(
-          "id, user_id, skills, interests, experience_level, education, goals, completed_at",
-        )
-        .eq("user_id", userId)
-        .order("completed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-    if (userRow.error) {
-      console.error("Failed to load user", userRow.error);
-      return NextResponse.json(
-        { error: "Failed to load user" },
-        { status: 500 },
-      );
-    }
-
-    const nowIso = new Date().toISOString();
+    const now = new Date();
 
     if (body.name !== undefined || body.bio !== undefined || body.location !== undefined || body.avatar !== undefined) {
-      const update: Record<string, unknown> = {};
-      if (body.name !== undefined) update.name = body.name;
-      if (body.bio !== undefined) update.bio = body.bio;
-      if (body.location !== undefined) update.location = body.location;
-      if (body.avatar !== undefined) update.avatar = body.avatar;
-
-      const { error: userUpdateError } = await supabase
-        .from("users")
-        .update(update)
-        .eq("id", userId);
-
-      if (userUpdateError) {
-        console.error("Failed to update user", userUpdateError);
-        return NextResponse.json(
-          { error: "Failed to update user" },
-          { status: 500 },
-        );
-      }
+      const updatePayload: Record<string, string | null> = {};
+      if (body.name !== undefined) updatePayload.name = body.name;
+      if (body.bio !== undefined) updatePayload.bio = body.bio;
+      if (body.location !== undefined) updatePayload.location = body.location;
+      if (body.avatar !== undefined) updatePayload.avatar = body.avatar;
+      await db.update(users).set(updatePayload).where(eq(users.id, userId));
     }
 
-    const existingOnboarding = onboardingRow.data;
+    const existingOnboarding = await db.query.onboardingProfiles.findFirst({
+      where: eq(onboardingProfiles.userId, userId)
+    });
 
     let skillsChanged = false;
 
-    if (
-      body.skills !== undefined ||
-      body.interests !== undefined ||
-      body.experience_level !== undefined ||
-      body.education !== undefined ||
-      body.goals !== undefined
-    ) {
-      const nextSkills =
-        body.skills ?? (existingOnboarding?.skills as string[] | null) ?? [];
-      const nextInterests =
-        body.interests ??
-        ((existingOnboarding?.interests as string[] | null) ?? []);
-      const nextExperience =
-        body.experience_level ?? existingOnboarding?.experience_level ?? null;
-      const nextEducation =
-        body.education ?? existingOnboarding?.education ?? null;
-      const nextGoals =
-        body.goals ?? (existingOnboarding?.goals as string[] | null) ?? [];
-
-      const prevSkills =
-        (existingOnboarding?.skills as string[] | null) ?? [];
-
+    if (body.skills !== undefined || body.interests !== undefined || body.experience_level !== undefined || body.education !== undefined || body.goals !== undefined) {
+      const nextSkills = body.skills ?? (existingOnboarding?.skills as string[] ?? []);
+      const nextInterests = body.interests ?? (existingOnboarding?.interests as string[] ?? []);
+      const nextExperience = body.experience_level ?? existingOnboarding?.experience_level ?? null;
+      const nextEducation = body.education ?? existingOnboarding?.education ?? null;
+      const nextGoals = body.goals ?? (existingOnboarding?.goals as string[] ?? []);
+      
+      const prevSkills = (existingOnboarding?.skills as string[] ?? []);
       const prevSet = new Set(prevSkills.map(normalizeSkill));
       const nextSet = new Set(nextSkills.map(normalizeSkill));
-
-      if (prevSet.size !== nextSet.size) {
-        skillsChanged = true;
-      } else {
-        for (const s of prevSet) {
-          if (!nextSet.has(s)) {
-            skillsChanged = true;
-            break;
-          }
-        }
-      }
+      skillsChanged = prevSet.size !== nextSet.size || [...prevSet].some(s => !nextSet.has(s));
 
       const upsertPayload = {
-        user_id: userId,
-        skills: nextSkills,
-        interests: nextInterests,
-        experience_level: nextExperience,
-        education: nextEducation,
-        goals: nextGoals,
-        completed_at: existingOnboarding?.completed_at ?? nowIso,
+        skills: nextSkills, interests: nextInterests,
+        experience_level: nextExperience, education: nextEducation, goals: nextGoals,
+        completed_at: existingOnboarding?.completed_at ?? now,
       };
 
-      let onboardingError;
       if (existingOnboarding) {
-        const { error } = await supabase
-          .from("onboarding_profiles")
-          .update(upsertPayload)
-          .eq("user_id", userId);
-        onboardingError = error;
+        await db.update(onboardingProfiles).set(upsertPayload).where(eq(onboardingProfiles.id, existingOnboarding.id));
       } else {
-        const { error } = await supabase
-          .from("onboarding_profiles")
-          .insert(upsertPayload);
-        onboardingError = error;
-      }
-
-      if (onboardingError) {
-        console.error("Failed to update onboarding profile", onboardingError);
-        return NextResponse.json(
-          { error: "Failed to update onboarding profile" },
-          { status: 500 },
-        );
+        await db.insert(onboardingProfiles).values({
+          id: crypto.randomUUID(),
+          userId,
+          ...upsertPayload
+        });
       }
 
       if (skillsChanged) {
         try {
           const nonEmptySkills = nextSkills.map(normalizeSkill).filter(Boolean);
-          const queryTokens =
-            nonEmptySkills.length > 0
-              ? nonEmptySkills
-              : nextGoals.length > 0
-                ? nextGoals
-                : nextInterests;
-
-          const whatQuery =
-            queryTokens.length > 0
-              ? queryTokens.join(" ")
-              : "software engineer";
-
-          const { jobs } = await fetchAdzunaJobs({
-            what: whatQuery,
-            resultsPerPage: 5,
-          });
-
+          const queryTokens = nonEmptySkills.length > 0 ? nonEmptySkills : nextGoals.length > 0 ? nextGoals : nextInterests;
+          const { jobs } = await fetchAdzunaJobs({ what: queryTokens.join(" ") || "software engineer", resultsPerPage: 5 });
           const jobSkills = extractSkillsFromJobs(jobs);
-          const userSkillsNorm = Array.from(
-            new Set(nextSkills.map(normalizeSkill).filter(Boolean)),
-          );
-          const jobSkillsNorm = Array.from(
-            new Set(jobSkills.map(normalizeSkill).filter(Boolean)),
-          );
-
-          const similarity = cosineSimilarity(userSkillsNorm, jobSkillsNorm);
-          const missingSkills = jobSkillsNorm.filter(
-            (skill) => !userSkillsNorm.includes(skill),
-          );
-          const sourceJobIds = jobs.map((j) => j.id);
-
-          await supabase.from("skill_gaps").delete().eq("user_id", userId);
-          await supabase
-            .from("skill_gaps")
-            .insert(
-              {
-                user_id: userId,
-                user_skills: userSkillsNorm,
-                job_skills: jobSkillsNorm,
-                missing_skills: missingSkills,
-                similarity_score: similarity,
-                source_job_ids: sourceJobIds,
-                computed_at: nowIso,
-              }
-            );
+          const userSkillsNorm = Array.from(new Set(nextSkills.map(normalizeSkill).filter(Boolean)));
+          const jobSkillsNorm = Array.from(new Set(jobSkills.map(normalizeSkill).filter(Boolean)));
+          
+          await db.delete(skillGaps).where(eq(skillGaps.userId, userId));
+          await db.insert(skillGaps).values({
+            id: crypto.randomUUID(),
+            userId,
+            user_skills: userSkillsNorm,
+            job_skills: jobSkillsNorm,
+            missing_skills: jobSkillsNorm.filter(s => !userSkillsNorm.includes(s)),
+            similarity_score: cosineSimilarity(userSkillsNorm, jobSkillsNorm),
+            source_job_ids: jobs.map(j => j.id),
+            computed_at: now,
+          });
         } catch (err) {
           console.error("Failed to recompute skill gaps", err);
         }
       }
     }
 
-    await supabase.from("analytics_events").insert({
-      user_id: userId,
+    await db.insert(analyticsEvents).values({
+      id: crypto.randomUUID(),
+      userId,
       event_type: "profile_updated",
-      metadata: {},
+      metadata: {}
     });
 
-    const profile = await loadFullProfile(supabase, userId);
+    const profile = await loadFullProfile(userId);
     return NextResponse.json(profile);
   } catch (error) {
     console.error("PATCH /api/profile error", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function DELETE() {
   try {
-    const { supabase, userId } = await getAuthUser();
-    if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const userId = await getSessionUserId();
+    if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-    const nowIso = new Date().toISOString();
-
-    const { error: userUpdateError } = await supabase
-      .from("users")
-      .update({
-        deleted_at: nowIso,
+    await db.update(users)
+      .set({
+        deleted_at: new Date(),
         name: "Deleted User",
-        email: null,
+        email: `deleted_${userId}@aspirely.app`,
         avatar: null,
         bio: null,
-        location: null,
+        location: null
       })
-      .eq("id", userId);
+      .where(eq(users.id, userId));
 
-    if (userUpdateError) {
-      console.error("Failed to soft delete user", userUpdateError);
-      return NextResponse.json(
-        { error: "Failed to delete account" },
-        { status: 500 },
-      );
-    }
-
-    const tablesWithUserId = [
-      "chat_history",
-      "analytics_events",
-      "mock_interviews",
-      "settings",
-      "skill_gaps",
-      "onboarding_profiles",
-    ] as const;
-
-    for (const table of tablesWithUserId) {
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq("user_id", userId);
-      if (error) {
-        console.error(`Failed to delete from ${table}`, error);
-      }
-    }
-
-    await supabase.auth.signOut();
+    // Drizzle doesn't have a direct equivalent to $transaction for multiple deleteManys as easily as Prisma
+    // but better-sqlite3 handles them fast anyway.
+    await db.delete(chatHistory).where(eq(chatHistory.userId, userId));
+    await db.delete(analyticsEvents).where(eq(analyticsEvents.userId, userId));
+    await db.delete(mockInterviews).where(eq(mockInterviews.userId, userId));
+    await db.delete(settings).where(eq(settings.userId, userId));
+    await db.delete(skillGaps).where(eq(skillGaps.userId, userId));
+    await db.delete(onboardingProfiles).where(eq(onboardingProfiles.userId, userId));
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/profile error", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

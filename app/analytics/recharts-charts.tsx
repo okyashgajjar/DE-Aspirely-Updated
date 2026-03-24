@@ -45,12 +45,14 @@ function ChartShell({
   children: React.ReactNode;
 }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-sm">{title}</CardTitle>
-        {description && <CardDescription className="text-xs">{description}</CardDescription>}
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-bold">{title}</CardTitle>
+        {description && <CardDescription className="text-[10px] leading-tight">{description}</CardDescription>}
       </CardHeader>
-      <CardContent className="h-72 pb-6">{children}</CardContent>
+      <CardContent className="h-[280px] w-full pb-4">
+        {children}
+      </CardContent>
     </Card>
   );
 }

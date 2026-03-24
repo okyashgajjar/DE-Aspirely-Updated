@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export function LogoutClient() {
   const router = useRouter();
@@ -14,8 +14,7 @@ export function LogoutClient() {
     let mounted = true;
     async function run() {
       try {
-        const supabase = getSupabaseBrowserClient();
-        await supabase.auth.signOut();
+        await signOut({ redirect: false });
         if (!mounted) return;
         router.push("/login");
       } catch (e) {

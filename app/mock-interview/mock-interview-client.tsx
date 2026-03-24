@@ -80,7 +80,7 @@ function VoiceUISkeletonLoader() {
                 className="w-1.5 rounded-full bg-primary/20"
                 style={{
                   height: `${15 + ((idx * 9) % 30)}px`,
-                  opacity: 0.3 + (Math.random() * 0.7)
+                  opacity: 0.3 + (((idx * 7) % 10) / 10) * 0.7
                 }}
               />
             ))}

@@ -299,7 +299,7 @@ export default function JobsClient() {
           <header className="mb-8 flex items-center justify-between border-b border-border/50 pb-4">
             <div>
                <h3 className="font-display text-2xl font-bold tracking-tight text-foreground">Algorithmic Matches</h3>
-               {!matchedLoading && !matchedError && userContext.skills.length > 0 && (
+               {!matchedLoading && !matchedError && userContext?.skills?.length > 0 && (
                  <p className="text-sm text-muted-foreground font-medium mt-1">
                    {matchedJobs.length} precision roles identified based on your {userContext.skills.slice(0, 2).join(", ")} footprint {userContext.location ? `in ${userContext.location}` : ""}
                  </p>

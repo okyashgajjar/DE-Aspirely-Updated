@@ -1,252 +1,112 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/auth";
+import { db } from "@/db";
+import { users, onboardingProfiles, skillGaps, mockInterviews } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { redirect } from "next/navigation";
+import { AppShell } from "@/components/layout/app-shell";
 import { DashboardChart } from "@/components/dashboard/dashboard-chart";
-import { DashboardJobsPreview } from "@/components/dashboard/dashboard-jobs";
 import { DashboardCoursesPreview } from "@/components/dashboard/dashboard-courses";
-
-export const dynamic = "force-dynamic";
-
-async function getDashboardData() {
-  const supabase = await getSupabaseServerClient();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    return { user: null, profile: null, stats: null, activity: [] };
-  }
-
-  const [userRow, onboardingRow, gapRow, interviewsRow, eventsRow] =
-    await Promise.all([
-      supabase
-        .from("users")
-        .select("id, email, name, avatar, bio, location, created_at")
-        .eq("id", user.id)
-        .maybeSingle(),
-      supabase
-        .from("onboarding_profiles")
-        .select(
-          "id, user_id, skills, interests, experience_level, education, goals, completed_at",
-        )
-        .eq("user_id", user.id)
-        .order("completed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("skill_gaps")
-        .select("missing_skills, similarity_score")
-        .eq("user_id", user.id)
-        .order("computed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("mock_interviews")
-        .select("score, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5),
-      supabase
-        .from("analytics_events")
-        .select("event_type, metadata, created_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
-
-  const userData = userRow.data;
-  const profileData = onboardingRow.data;
-  const gapData = gapRow.data;
-  const interviews = interviewsRow.data ?? [];
-  const events = eventsRow.data ?? [];
-
-  // Compute stats
-  const userSkillsCount = (profileData?.skills as string[] | null)?.length ?? 0;
-  const missingSkills =
-    (gapData?.missing_skills as string[] | null) ?? [];
-  const total = userSkillsCount + missingSkills.length;
-  const skillGapPercent =
-    total === 0
-      ? 0
-      : Math.round((missingSkills.length / total) * 100);
-
-  const latestInterviewScore =
-    interviews.length > 0 ? Math.round(interviews[0].score as number) : 0;
-
-  const jobEvents = events.filter(
-    (e) =>
-      e.event_type === "job_clicked" || e.event_type === "job_viewed",
-  );
-  const courseEvents = events.filter(
-    (e) =>
-      e.event_type === "course_clicked" || e.event_type === "course_viewed",
-  );
-
-  const stats = {
-    jobsMatched: jobEvents.length,
-    coursesSuggested: courseEvents.length,
-    interviewScore: latestInterviewScore,
-    skillGapPercent,
-  };
-
-  return {
-    user: userData
-      ? {
-        name: userData.name as string | null,
-      }
-      : null,
-    profile: profileData
-      ? {
-        experience_level: profileData.experience_level as string | null,
-        skills: (profileData.skills as string[] | null) ?? [],
-      }
-      : null,
-    stats,
-    interviews,
-  };
-}
-
-export async function generateMetadata(): Promise<Metadata> {
-  const { user } = await getDashboardData();
-  const name = user?.name ?? "there";
-  const title = `Dashboard — Hi ${name}`;
-  const description = "Your Aspirely dashboard: stats, activity, and quick links.";
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: "/dashboard",
-    },
-    openGraph: {
-      title,
-      description,
-      images: [
-        {
-          url: `/api/og?title=${encodeURIComponent(
-            title,
-          )}&description=${encodeURIComponent(description)}`,
-        },
-      ],
-    },
-  };
-}
+import { DashboardJobsPreview } from "@/components/dashboard/dashboard-jobs";
 
 export default async function DashboardPage() {
-  const { user, profile, stats, interviews } = await getDashboardData();
+  const session = await auth();
+  if (!session?.user) redirect("/login");
 
-  const dashStats = stats ?? {
-    jobsMatched: 0,
-    coursesSuggested: 0,
-    interviewScore: 0,
-    skillGapPercent: 0,
-  };
+  const userId = session.user.id!;
+
+  const [user, profile, gap, interviewList] = await Promise.all([
+    db.query.users.findFirst({
+      where: eq(users.id, userId),
+    }),
+    db.query.onboardingProfiles.findFirst({
+      where: eq(onboardingProfiles.userId, userId),
+      orderBy: [desc(onboardingProfiles.completed_at)],
+    }),
+    db.query.skillGaps.findFirst({
+      where: eq(skillGaps.userId, userId),
+      orderBy: [desc(skillGaps.computed_at)],
+    }),
+    db.query.mockInterviews.findMany({
+      where: eq(mockInterviews.userId, userId),
+      orderBy: [desc(mockInterviews.created_at)],
+      limit: 10,
+    }),
+  ]);
+
+  if (!profile) redirect("/onboarding");
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in-up">
-      <section className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="space-y-1">
-            <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
-              Dashboard
-            </p>
-            <h2 className="font-display text-4xl font-bold tracking-tight">
-              Hi, {user?.name ?? "there"}.
-            </h2>
-            <p className="text-sm text-muted-foreground font-medium">
-              Your next best moves, based on your skills and goals.
-            </p>
+    <AppShell>
+      <div className="flex flex-col gap-8">
+        {/* Welcome Block */}
+        <section className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-primary to-primary-container p-8 text-primary-foreground shadow-2xl shadow-primary/20">
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-background/10 blur-3xl" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
+                Ready to ascend, {user?.name?.split(' ')[0] || "Explorer"}?
+              </h2>
+              <p className="text-sm text-muted-foreground font-medium">Analyze your journey and identify your footprint&apos;s growth.</p>
+              <p className="max-w-md text-sm font-medium opacity-80 leading-relaxed">
+                You're currently matching <span className="text-secondary-foreground font-bold">{gap?.similarity_score || 0}%</span> of your target role profile.
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" asChild className="rounded-full border-border hover:bg-surface-container-low transition-colors">
-              <Link href="/profile">Edit profile</Link>
-            </Button>
-            <Button asChild className="rounded-full bg-gradient-to-br from-primary to-primary-container text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all hover:scale-105 active:scale-95">
-              <Link href="/jobs">Explore jobs</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Overview Cards */}
-      <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: "Jobs Matched", value: dashStats.jobsMatched, color: "text-primary" },
-          { label: "Courses Suggested", value: dashStats.coursesSuggested, color: "text-secondary" },
-          { label: "Interview Score", value: dashStats.interviewScore, color: "text-tertiary" },
-          { label: "Skill Gap %", value: `${dashStats.skillGapPercent}%`, color: "text-foreground" },
-        ].map((s, i) => (
-          <div key={s.label} className="glass-panel overflow-hidden rounded-3xl p-6 transition-all hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 relative group">
-            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
-            <h3 className="text-sm font-medium text-muted-foreground mb-4">{s.label}</h3>
-            <div className={`font-display text-4xl font-bold ${s.color}`}>{s.value}</div>
-          </div>
-        ))}
-      </section>
-
-      {/* Main Content Grid */}
-      <section className="grid gap-6 lg:grid-cols-3">
-        {/* Left Column: Analytics Chart & Jobs */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
-          {/* Performance Analytics */}
-          <div className="glass-panel rounded-3xl p-6 flex flex-col border border-border/50">
-            <h3 className="font-display text-xl font-bold mb-2">Performance Trajectory</h3>
-            <p className="text-sm text-muted-foreground mb-4">Your mock interview scores over time.</p>
-            <DashboardChart interviews={interviews as any} />
+        {/* Main Grid */}
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Performance Trajectory */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="font-display text-lg font-bold">Performance Trajectory</h3>
+            </div>
+            <div className="rounded-[32px] border border-border/50 bg-surface-container-low/50 backdrop-blur-sm p-6 shadow-sm">
+              <DashboardChart interviews={interviewList as any} />
+            </div>
           </div>
 
-          {/* Job Previews */}
-          <div className="glass-panel rounded-3xl p-6 border border-border/50">
-            <h3 className="font-display text-xl font-bold mb-2">Recommended Opportunities</h3>
-            <p className="text-sm text-muted-foreground mb-6">Jobs precisely matched to your current skill profile.</p>
-            <DashboardJobsPreview />
+          {/* Quick Actions / Stats */}
+          <div className="space-y-4">
+            <h3 className="font-display text-lg font-bold px-2">Profile Overview</h3>
+            <div className="grid gap-4">
+              <div className="rounded-3xl border border-border/30 bg-surface-container-lowest p-6 transition-all hover:bg-surface-container-low">
+                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1">Target Match</p>
+                <div className="flex items-end gap-2">
+                  <span className="text-4xl font-bold text-primary">{gap?.similarity_score || 0}%</span>
+                </div>
+              </div>
+              <div className="rounded-3xl border border-border/30 bg-surface-container-lowest p-6 transition-all hover:bg-surface-container-low">
+                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1">Skills Identified</p>
+                <span className="text-4xl font-bold text-secondary">{(profile.skills as string[]).length}</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Profile & Courses */}
-        <div className="flex flex-col gap-6">
-          {/* Profile Snapshot */}
-          <div className="glass-panel rounded-3xl p-6 border border-border/50 relative overflow-hidden text-center">
-             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
-             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-surface-container-highest border-2 border-primary/20 flex items-center justify-center shadow-inner">
-                 <span className="text-2xl font-display font-bold text-primary">{user?.name ? user.name.charAt(0).toUpperCase() : "U"}</span>
-             </div>
-             <h3 className="font-display text-lg font-bold">Profile Snapshot</h3>
-             {profile ? (
-                <>
-                  <p className="mt-2 text-sm text-primary font-medium">{profile.experience_level ?? "—"}</p>
-                  <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                     {profile.skills.slice(0, 3).map(skill => (
-                        <span key={skill} className="rounded-md bg-secondary/10 px-2 py-1 text-xs font-semibold text-secondary">
-                          {skill}
-                        </span>
-                     ))}
-                     {profile.skills.length > 3 && (
-                        <span className="rounded-md bg-surface-container px-2 py-1 text-xs font-medium text-muted-foreground">
-                          +{profile.skills.length - 3}
-                        </span>
-                     )}
-                  </div>
-                </>
-              ) : (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Complete onboarding to personalize Aspirely.
-                </p>
-              )}
+        {/* Matches Grid */}
+        <div className="grid gap-8 md:grid-cols-2">
+          {/* Jobs Preview */}
+          <div className="space-y-4 flex flex-col h-full">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="font-display text-lg font-bold">Top Job Targets</h3>
+            </div>
+            <div className="flex-1 rounded-[32px] border border-border/50 bg-surface-container-low/50 backdrop-blur-sm p-6 shadow-sm flex flex-col">
+              <DashboardJobsPreview />
+            </div>
           </div>
 
-          {/* Courses Previews */}
-          <div className="glass-panel rounded-3xl p-6 border border-border/50 flex-1">
-            <h3 className="font-display text-xl font-bold mb-2">Skill Builders</h3>
-            <p className="text-sm text-muted-foreground mb-6">Courses to close your skill gaps.</p>
-            <DashboardCoursesPreview />
+          {/* Courses Preview */}
+          <div className="space-y-4 flex flex-col h-full">
+            <div className="flex items-center justify-between px-2">
+              <h3 className="font-display text-lg font-bold">Accelerated Learning</h3>
+            </div>
+            <div className="flex-1 rounded-[32px] border border-border/50 bg-surface-container-low/50 backdrop-blur-sm p-6 shadow-sm flex flex-col">
+              <DashboardCoursesPreview />
+            </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </AppShell>
   );
 }

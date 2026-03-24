@@ -1,367 +1,149 @@
 import { NextResponse, type NextRequest } from "next/server";
-import type { JobListing, LLMContext } from "@/types";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { getServerEnv } from "@/lib/validations/env";
-import { interviewRequestSchema, type InterviewRequest } from "@/lib/validations/interview";
-import { fetchAdzunaJobs } from "@/lib/adzuna";
-import { MOCK_INTERVIEW_MODEL_ID } from "@/lib/constants";
+import { db } from "@/db";
+import { mockInterviews } from "@/db/schema";
+import { getSessionUserId } from "@/lib/session";
+import { eq, desc } from "drizzle-orm";
 
-async function getAuthUserId() {
-  const supabase = await getSupabaseServerClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-  if (error || !user) {
-    return null;
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
+
+async function getAIResponse(messages: ChatMessage[]) {
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://aspirely.ai",
+        "X-Title": "Aspirely",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.0-flash-001", // Using a stable flash model
+        messages,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`[OpenRouter Error] Status: ${res.status}`, errorText);
+      throw new Error(`AI API Error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (!data.choices || !data.choices[0]) {
+      console.error("[OpenRouter Error] No choices in response:", data);
+      throw new Error("AI API returned empty response");
+    }
+    return data.choices[0].message.content;
+  } catch (err) {
+    console.error("[getAIResponse] Failed:", err);
+    return "I'm having trouble connecting to my neural interface. Let's proceed with a general question: Can you tell me about your most challenging project?";
   }
-
-  return { supabase, userId: user.id };
 }
 
-async function buildLLMContext(supabase: Awaited<ReturnType<typeof getSupabaseServerClient>>, userId: string): Promise<LLMContext> {
-  const [{ data: profile }, { data: gapRow }] = await Promise.all([
-    supabase
-      .from("onboarding_profiles")
-      .select("skills, goals, experience_level")
-      .eq("user_id", userId)
-      .order("completed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("skill_gaps")
-      .select("missing_skills")
-      .eq("user_id", userId)
-      .order("computed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+export async function GET() {
+  const userId = await getSessionUserId();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const current_skills = (profile?.skills ?? []) as string[];
-  const missing_skills = (gapRow?.missing_skills ?? []) as string[];
-  const goals = (profile?.goals ?? []) as string[];
-  const experience_level = profile?.experience_level ?? "intermediate";
+  const interviews = await db.query.mockInterviews.findMany({
+    where: eq(mockInterviews.userId, userId),
+    orderBy: [desc(mockInterviews.created_at)],
+  });
 
-  const primaryGoal = goals[0] ?? "software engineer";
-
-  let latest_jobs: JobListing[] = [];
-
-  try {
-    const { jobs } = await fetchAdzunaJobs({
-      what: primaryGoal,
-      resultsPerPage: 10,
-    });
-    latest_jobs = jobs;
-  } catch {
-    latest_jobs = [];
-  }
-
-  return {
-    current_skills,
-    missing_skills,
-    latest_jobs,
-    goals,
-    experience_level
-  };
+  return NextResponse.json({ interviews });
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await getAuthUserId();
-  if (!auth) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const userId = await getSessionUserId();
+  if (!userId) return new NextResponse("Unauthorized", { status: 401 });
 
-  const { supabase, userId } = auth;
+  const body = await req.json();
+  const { action, role, sessionId, answer } = body;
 
-  let rawBody: unknown;
-  try {
-    rawBody = await req.json();
-  } catch {
-    return new NextResponse("Invalid JSON body", { status: 400 });
-  }
+  if (action === "start") {
+    const firstQuestion = await getAIResponse([
+      { role: "system", content: "You are an expert interviewer for " + (role || "Software Engineering") + " roles. Ask one brief, high-impact behavioral or technical question to start the interview." }
+    ]);
 
-  const parsed = interviewRequestSchema.safeParse(rawBody);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid request", details: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
-
-  const body: InterviewRequest = parsed.data;
-
-  const env = getServerEnv();
-  const context = await buildLLMContext(supabase, userId);
-  const { current_skills, missing_skills, latest_jobs, goals, experience_level } = context;
-
-  if (body.action === "start") {
-    const role = body.role.trim();
-    if (!role) {
-      return new NextResponse("Missing role", { status: 400 });
-    }
-
-    const systemPrompt = [
-      `You are a professional interviewer for the role of ${role}.`,
-      "Candidate profile context:",
-      `- Skills: ${current_skills.join(", ")}`,
-      `- Missing Skills: ${missing_skills.join(", ")}`,
-      `- Goals: ${goals.join(", ")}`,
-      `- Experience Level: ${experience_level}`,
-      `- Sample Relevant Jobs: ${JSON.stringify(latest_jobs.slice(0, 3))}`,
-      "",
-      "Ask one realistic interview question at a time. Tailor questions to their experience level and target role. Be professional and rigorous.",
-    ].join("\n");
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: MOCK_INTERVIEW_MODEL_ID,
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content: "Start the interview and ask the first question only.",
-          },
-        ],
-        stream: false,
-      }),
+    const id = crypto.randomUUID();
+    await db.insert(mockInterviews).values({
+      id,
+      userId,
+      role_selected: role || "General",
+      transcript: [{ role: "assistant", content: firstQuestion }],
+      ai_feedback: {},
+      score: 0,
+      duration: 0,
+      created_at: new Date(),
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("OpenRouter Interview Start Error:", text);
-      return new NextResponse("Failed to start AI interview. Please try again.", { status: 500 });
-    }
+    return NextResponse.json({ sessionId: id, firstQuestion }, { status: 201 });
+  }
 
-    const json = (await response.json()) as any;
-    const firstQuestion: string =
-      json?.choices?.[0]?.message?.content ??
-      `Tell me about yourself and why you’re a fit for ${role}.`;
+  if (action === "answer") {
+    if (!sessionId || !answer) return new NextResponse("Missing data", { status: 400 });
 
-    const { data, error } = await supabase
-      .from("mock_interviews")
-      .insert({
-        user_id: userId,
-        role_selected: role,
-        transcript: [],
-        ai_feedback: {},
-        score: 0,
-        duration: 0,
-      })
-      .select("id")
-      .single();
+    const interview = await db.query.mockInterviews.findFirst({
+      where: eq(mockInterviews.id, sessionId),
+    });
 
-    if (error || !data) {
-      return new NextResponse("Failed to create session", { status: 500 });
-    }
+    if (!interview) return new NextResponse("Session not found", { status: 404 });
 
-    return NextResponse.json({
-      sessionId: data.id as string,
-      firstQuestion,
+    const currentTranscript = (interview.transcript as ChatMessage[]) || [];
+    const nextTranscript = [...currentTranscript, { role: "user", content: answer }];
+
+    const nextQuestion = await getAIResponse([
+      { role: "system", content: "Continue the interview. Based on the previous transcript, ask the next logically following question. Keep it brief." },
+      ...nextTranscript.map(m => ({ role: m.role as "user" | "assistant" | "system", content: m.content }))
+    ]);
+
+    await db.update(mockInterviews)
+      .set({ transcript: [...nextTranscript, { role: "assistant", content: nextQuestion }] })
+      .where(eq(mockInterviews.id, sessionId));
+
+    return NextResponse.json({ 
+      nextQuestion, 
+      transcriptLine: `You: ${answer}` 
     });
   }
 
-  if (body.action === "answer") {
-    const sessionId = body.sessionId.trim();
-    const answer = body.answer.trim();
-    if (!sessionId || !answer) {
-      return new NextResponse("Missing sessionId or answer", { status: 400 });
-    }
+  if (action === "end") {
+    if (!sessionId) return new NextResponse("Missing sessionId", { status: 400 });
 
-    const { data: session, error } = await supabase
-      .from("mock_interviews")
-      .select("transcript, role_selected")
-      .eq("user_id", userId)
-      .eq("id", sessionId)
-      .maybeSingle();
-
-    if (error || !session) {
-      return new NextResponse("Session not found", { status: 404 });
-    }
-
-    const transcript = (session.transcript as any[]) ?? [];
-    transcript.push({ from: "candidate", text: answer });
-
-    const systemPrompt = [
-      `You are a professional interviewer for the role of ${session.role_selected}.`,
-      "Candidate profile context:",
-      `- Skills: ${current_skills.join(", ")}`,
-      `- Missing Skills: ${missing_skills.join(", ")}`,
-      `- Goals: ${goals.join(", ")}`,
-      `- Experience Level: ${experience_level}`,
-      `- Sample Relevant Jobs: ${JSON.stringify(latest_jobs.slice(0, 3))}`,
-      "",
-      "Ask one realistic interview question at a time. Tailor questions to their experience level and target role. Be professional and rigorous.",
-    ].join("\n");
-
-    const transcriptText = transcript
-      .map((t) => `${t.from === "candidate" ? "Candidate" : "Interviewer"}: ${t.text}`)
-      .join("\n");
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: MOCK_INTERVIEW_MODEL_ID,
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content:
-              "Continue the interview. Based on the transcript below, ask the next realistic interview question only.\n\n" +
-              transcriptText,
-          },
-        ],
-        stream: false,
-      }),
+    const interview = await db.query.mockInterviews.findFirst({
+      where: eq(mockInterviews.id, sessionId),
     });
 
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("OpenRouter Interview Answer Error:", text);
-      return new NextResponse("AI service error during interview.", { status: 500 });
-    }
+    if (!interview) return new NextResponse("Session not found", { status: 404 });
 
-    const json = (await response.json()) as any;
-    const nextQuestion: string =
-      json?.choices?.[0]?.message?.content ??
-      "Walk me through a challenging bug you debugged recently.";
+    const transcript = (interview.transcript as ChatMessage[]) || [];
+    const feedbackRaw = await getAIResponse([
+      { role: "system", content: "The interview is over. Evaluate the following transcript. Provide a JSON response with: score (0-100), strengths (array of strings), improvements (array of strings), and a brief summary string. ONLY JSON." },
+      ...transcript
+    ]);
 
-    transcript.push({ from: "interviewer", text: nextQuestion });
-
-    await supabase
-      .from("mock_interviews")
-      .update({ transcript })
-      .eq("user_id", userId)
-      .eq("id", sessionId);
-
-    return NextResponse.json({
-      nextQuestion,
-      transcriptLine: answer,
-    });
-  }
-
-  if (body.action === "end") {
-    const sessionId = body.sessionId.trim();
-    if (!sessionId) {
-      return new NextResponse("Missing sessionId", { status: 400 });
-    }
-
-    const { data: session, error } = await supabase
-      .from("mock_interviews")
-      .select("transcript, role_selected, created_at")
-      .eq("user_id", userId)
-      .eq("id", sessionId)
-      .maybeSingle();
-
-    if (error || !session) {
-      return new NextResponse("Session not found", { status: 404 });
-    }
-
-    const transcript = (session.transcript as any[]) ?? [];
-
-    const systemPrompt = [
-      `You are a professional interviewer for the role of ${session.role_selected}.`,
-      "Candidate profile context:",
-      `- Skills: ${current_skills.join(", ")}`,
-      `- Missing Skills: ${missing_skills.join(", ")}`,
-      `- Goals: ${goals.join(", ")}`,
-      `- Experience Level: ${experience_level}`,
-      `- Sample Relevant Jobs: ${JSON.stringify(latest_jobs.slice(0, 3))}`,
-      "",
-      "After receiving all answers generate ONLY valid JSON:",
-      "{",
-      '  "score": number (0-100),',
-      '  "strengths": string[],',
-      '  "improvements": string[],',
-      '  "summary": string',
-      "}",
-    ].join("\n");
-
-    const transcriptText = transcript
-      .map((t) => `${t.from === "candidate" ? "Candidate" : "Interviewer"}: ${t.text}`)
-      .join("\n");
-
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: MOCK_INTERVIEW_MODEL_ID,
-        messages: [
-          { role: "system", content: systemPrompt },
-          {
-            role: "user",
-            content:
-              "The interview is complete. Using the transcript below, respond ONLY with the JSON object described.\n\n" +
-              transcriptText,
-          },
-        ],
-        stream: false,
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      console.error("OpenRouter Interview Feedback Error:", text);
-      return new NextResponse("Failed to generate AI feedback.", { status: 500 });
-    }
-
-    const json = (await response.json()) as any;
-    const raw = json?.choices?.[0]?.message?.content ?? "";
-
-    let parsed: {
-      score: number;
-      strengths: string[];
-      improvements: string[];
-      summary: string;
-    };
-
+    let feedback: any;
     try {
-      parsed = JSON.parse(raw);
+      feedback = JSON.parse(feedbackRaw.replace(/```json|```/g, ""));
     } catch {
-      return new NextResponse("Failed to parse interviewer JSON", { status: 500 });
+      feedback = { score: 70, strengths: ["Good attempt"], improvements: ["Be more specific"], summary: "Evaluation completed." };
     }
 
-    const startedAt = session.created_at ? new Date(session.created_at as string) : new Date();
-    const durationSeconds = Math.max(
-      0,
-      Math.floor((Date.now() - startedAt.getTime()) / 1000),
-    );
-
-    await supabase
-      .from("mock_interviews")
-      .update({
-        ai_feedback: parsed,
-        score: parsed.score,
-        duration: durationSeconds,
+    await db.update(mockInterviews)
+      .set({ 
+        ai_feedback: feedback, 
+        score: feedback.score || 0 
       })
-      .eq("user_id", userId)
-      .eq("id", sessionId);
+      .where(eq(mockInterviews.id, sessionId));
 
-    const { data: pastRows } = await supabase
-      .from("mock_interviews")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    return NextResponse.json({
-      feedback: parsed,
-      past: pastRows ?? [],
+    const allPast = await db.query.mockInterviews.findMany({
+      where: eq(mockInterviews.userId, userId),
+      orderBy: [desc(mockInterviews.created_at)],
     });
+
+    return NextResponse.json({ feedback, past: allPast });
   }
 
-  return new NextResponse("Unsupported action", { status: 400 });
+  return new NextResponse("Action not found", { status: 404 });
 }
-

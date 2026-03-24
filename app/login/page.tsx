@@ -6,11 +6,10 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 
 import { ArrowLeft } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -37,18 +36,16 @@ export default function LoginPage() {
     setSubmitting(true);
     setError(null);
     setMagicLinkSent(false);
-    const supabase = getSupabaseBrowserClient();
 
     if (isMagicLink) {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
+      const res = await signIn("email", {
         email: values.email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
-        },
+        redirect: false,
+        callbackUrl: redirectTo,
       });
       setSubmitting(false);
-      if (otpError) {
-        setError(otpError.message);
+      if (res?.error) {
+        setError("Could not send magic link. Please try again.");
       } else {
         setMagicLinkSent(true);
       }
@@ -61,29 +58,25 @@ export default function LoginPage() {
       return;
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const res = await signIn("credentials", {
       email: values.email,
       password: values.password,
+      redirect: false,
     });
 
     setSubmitting(false);
 
-    if (signInError) {
-      setError(signInError.message);
+    if (res?.error) {
+      setError("Invalid email or password.");
       return;
     }
 
     router.push(redirectTo);
+    router.refresh();
   }
 
   async function signInWithGoogle() {
-    const supabase = getSupabaseBrowserClient();
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-      },
-    });
+    await signIn("google", { callbackUrl: redirectTo });
   }
 
   return (
@@ -109,6 +102,7 @@ export default function LoginPage() {
           {magicLinkSent ? (
             <div className="flex flex-col items-center justify-center p-8 bg-primary/5 border border-primary/20 rounded-2xl text-center space-y-4 animate-in fade-in zoom-in duration-500 mb-8">
               <h3 className="font-display text-xl font-bold text-primary">Check your email</h3>
+              <p className="text-muted-foreground">Don&apos;t have an account? Contact your administrator.</p>
               <p className="text-sm text-muted-foreground">
                 We've sent a secure login link to <span className="font-semibold text-foreground">{form.getValues().email}</span>. Please check your inbox and click the link to sign in.
               </p>
@@ -174,9 +168,7 @@ export default function LoginPage() {
 
           <div className="mt-8 flex items-center gap-4">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">
-              or
-            </span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-mono">or</span>
             <span className="h-px flex-1 bg-border" />
           </div>
 
@@ -191,10 +183,7 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-muted-foreground">
             New to Aspirely?{" "}
-            <Link
-              href="/signup"
-              className="font-semibold text-primary underline-offset-4 hover:underline transition-colors"
-            >
+            <Link href="/signup" className="font-semibold text-primary underline-offset-4 hover:underline transition-colors">
               Create an account
             </Link>
           </p>
@@ -203,14 +192,11 @@ export default function LoginPage() {
 
       {/* Right Side: Visual */}
       <div className="hidden md:flex w-1/2 relative bg-surface-container items-center justify-center overflow-hidden border-l border-border">
-        {/* Abstract Background Elements */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
         <div className="absolute top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px] animate-pulse pointer-events-none mix-blend-screen" />
-        
-        {/* Glassmorphic Badge */}
         <div className="glass-panel rounded-3xl p-12 max-w-md relative z-10 text-center border border-primary/20 shadow-2xl">
           <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-gradient-to-tr from-primary to-secondary flex items-center justify-center shadow-inner">
-             <div className="h-6 w-6 rounded-full bg-background" />
+            <div className="h-6 w-6 rounded-full bg-background" />
           </div>
           <h2 className="font-display text-3xl font-bold mb-4">The Digital Curator</h2>
           <p className="text-muted-foreground leading-relaxed text-sm">
@@ -221,4 +207,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
