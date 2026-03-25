@@ -150,8 +150,8 @@ export function VoiceUI() {
       speakingRef.current = false;
     };
 
-    w.speechSynthesis.cancel();
-    w.speechSynthesis.speak(utterance);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
   }, [currentQuestion]);
 
   async function submitTextAnswer(finalAnswer?: string) {

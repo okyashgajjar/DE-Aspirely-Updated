@@ -1,13 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/db";
 import { users, onboardingProfiles, skillGaps } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getSessionUserId } from "@/lib/session";
 import { fetchAdzunaJobs } from "@/lib/adzuna";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const userId = await getSessionUserId();
   if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
+  const url = new URL(req.url);
+  const pageRaw = url.searchParams.get("page");
+  const page = Number.isNaN(Number(pageRaw)) || !pageRaw ? 1 : Math.max(1, Number(pageRaw));
+  const ITEMS_PER_PAGE = 10;
 
   const [user, profile, gap] = await Promise.all([
     db.query.users.findFirst({
@@ -41,19 +46,67 @@ export async function GET() {
 
   console.log(`[JobsMatched] Fetching for: ${primaryGoal} in ${simplifiedLocation} (Country: ${country})`);
 
-  const { jobs } = await fetchAdzunaJobs({
+  // Fetch a larger pool of jobs (e.g. 50) to evaluate and rank locally
+  const { jobs: rawJobs } = await fetchAdzunaJobs({
     what: primaryGoal,
     where: simplifiedLocation || undefined,
     country,
-    resultsPerPage: 10,
+    resultsPerPage: 50,
   });
 
-  console.log(`[JobsMatched] Found ${jobs.length} jobs.`);
+  const userSkillsList = (profile?.skills as string[]) || [];
+  
+  // Cross-validate skills and calculate match scores
+  const evaluatedJobs = rawJobs.map((job) => {
+    let matchScore = 0;
+    const matchingSkills: string[] = [];
+    const missingSkills: string[] = [];
+
+    if (userSkillsList.length === 0) {
+      matchScore = 50; // Default if no skills to check
+    } else {
+      const jobText = `${job.title} ${job.description}`.toLowerCase();
+      let matches = 0;
+
+      for (const skill of userSkillsList) {
+        // Use word boundaries for accurate skill matching (e.g. "C" vs "CSS")
+        const regex = new RegExp(`\\b${skill.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+        if (regex.test(jobText)) {
+          matches++;
+          matchingSkills.push(skill);
+        } else {
+          missingSkills.push(skill);
+        }
+      }
+
+      matchScore = Math.round((matches / userSkillsList.length) * 100);
+    }
+
+    return {
+      ...job,
+      matchScore,
+      matchingSkills,
+      missingSkills,
+    };
+  });
+
+  // Sort strictly by match score descending
+  evaluatedJobs.sort((a, b) => b.matchScore - a.matchScore);
+
+  // Paginate the sorted results locally
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const paginatedJobs = evaluatedJobs.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const hasMore = evaluatedJobs.length > startIndex + ITEMS_PER_PAGE;
+
+  console.log(`[JobsMatched] Found ${rawJobs.length} total, sorted and returning ${paginatedJobs.length} for page ${page}`);
 
   return NextResponse.json({ 
-    jobs, 
+    jobs: paginatedJobs, 
     skill_gap: gap,
-    userSkills: profile?.skills || [],
-    userLocation: user?.location || ""
+    userSkills: userSkillsList,
+    userLocation: rawLocation,
+    page,
+    hasMore,
+    total: evaluatedJobs.length
   });
 }

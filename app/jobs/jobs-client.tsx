@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/utils/cn";
@@ -14,6 +14,9 @@ type MatchedResponse = {
   jobs: JobListing[];
   userSkills: string[];
   userLocation: string;
+  page: number;
+  hasMore: boolean;
+  total: number;
 };
 
 type SearchResponse = {
@@ -32,15 +35,15 @@ function JobCard({ job }: { job: JobListing }) {
         : null;
 
   const score = job.matchScore ?? 0;
-  let scoreColor = "bg-slate-100 text-slate-700 border-slate-200";
-  let scoreText = "Partial Match";
+  let scoreClasses = "bg-muted text-muted-foreground";
+  let scoreText = "Partial";
 
   if (score >= 80) {
-    scoreColor = "bg-green-100 text-green-800 border-green-200";
-    scoreText = "Strong Match";
+    scoreClasses = "bg-secondary/10 text-secondary";
+    scoreText = "Strong";
   } else if (score >= 50) {
-    scoreColor = "bg-yellow-100 text-yellow-800 border-yellow-200";
-    scoreText = "Good Match";
+    scoreClasses = "bg-primary/10 text-primary";
+    scoreText = "Good";
   }
 
   const handleApply = async () => {
@@ -59,51 +62,52 @@ function JobCard({ job }: { job: JobListing }) {
   };
 
   return (
-    <div className="group glass-panel flex flex-col h-full rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-primary/10 transition-all hover:-translate-y-1 relative border border-border/50">
-      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-         <span className="flex h-3 w-3 rounded-full bg-primary animate-ping" />
-      </div>
-      <CardHeader className="p-6 pb-4">
-        <div className="flex items-start justify-between gap-4">
+    <div className="group flex flex-col h-full rounded-2xl bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all hover:-translate-y-0.5">
+      <CardHeader className="p-5 pb-3">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="font-display text-xl leading-tight group-hover:text-primary transition-colors">
+            <CardTitle className="font-display text-lg leading-tight group-hover:text-primary transition-colors">
               {job.title}
             </CardTitle>
-            <div className="mt-2 text-sm font-semibold text-muted-foreground">
+            <div className="mt-1.5 text-sm font-medium text-muted-foreground">
               {job.company}
             </div>
           </div>
-          <Badge variant="outline" className={cn("shrink-0 rounded-full font-bold uppercase tracking-wider text-[10px] px-3 py-1 shadow-sm", scoreColor.replace('slate', 'muted').replace('bg-slate-100', 'bg-surface-container').replace('border-slate-200', 'border-border').replace('text-slate-700', 'text-foreground').replace('bg-green-100', 'bg-secondary/10').replace('text-green-800', 'text-secondary').replace('border-green-200', 'border-secondary/20').replace('bg-yellow-100', 'bg-tertiary/10').replace('text-yellow-800', 'text-tertiary').replace('border-yellow-200', 'border-tertiary/20'))}>
-            {scoreText} ({score}%)
+          <Badge className={cn("shrink-0 rounded-full font-semibold text-[10px] px-2.5 py-0.5 border-0", scoreClasses)}>
+            {scoreText} {score}%
           </Badge>
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 text-xs font-medium text-muted-foreground">
+        <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium text-muted-foreground">
           {job.location && (
-            <span className="flex items-center gap-1.5 rounded-full bg-surface-container-low px-2.5 py-1 border border-border/50"><svg className="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>{job.location}</span>
+            <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+              📍 {job.location}
+            </span>
           )}
           {salary && (
-            <span className="flex items-center gap-1.5 rounded-full bg-surface-container-low px-2.5 py-1 border border-border/50"><svg className="w-3 h-3 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>{salary}</span>
+            <span className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1">
+              💰 {salary}
+            </span>
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col p-6 pt-0">
-        <p className="line-clamp-3 text-sm text-foreground/80 flex-1 mb-6 leading-relaxed">
+      <CardContent className="flex flex-1 flex-col p-5 pt-0">
+        <p className="line-clamp-3 text-sm text-muted-foreground flex-1 mb-4 leading-relaxed">
           {job.description}
         </p>
 
         {(job.matchingSkills?.length || job.missingSkills?.length) ? (
-          <div className="space-y-4 mb-6 rounded-2xl bg-background/30 p-4 border border-border/30">
+          <div className="space-y-3 mb-4 rounded-xl bg-muted/50 p-3">
             {job.matchingSkills && job.matchingSkills.length > 0 && (
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Matched Skills</span>
-                <div className="flex flex-wrap gap-1.5 mt-1">
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Matched</span>
+                <div className="flex flex-wrap gap-1">
                   {job.matchingSkills.slice(0, 4).map((skill) => (
-                    <Badge key={skill} variant="outline" className="bg-secondary/10 text-secondary border-secondary/20 hover:bg-secondary/20 text-[10px] px-2 py-0.5 rounded-md font-semibold">
+                    <Badge key={skill} className="bg-secondary/10 text-secondary border-0 text-[10px] px-2 py-0.5 rounded-md font-medium">
                       {skill}
                     </Badge>
                   ))}
                   {job.matchingSkills.length > 4 && (
-                    <Badge variant="outline" className="bg-surface-container border-border/50 text-muted-foreground text-[10px] px-2 py-0.5 rounded-md font-semibold">
+                    <Badge className="bg-muted text-muted-foreground border-0 text-[10px] px-2 py-0.5 rounded-md font-medium">
                       +{job.matchingSkills.length - 4}
                     </Badge>
                   )}
@@ -112,16 +116,16 @@ function JobCard({ job }: { job: JobListing }) {
             )}
 
             {job.missingSkills && job.missingSkills.length > 0 && (
-              <div className="space-y-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Skill Gaps</span>
-                <div className="flex flex-wrap gap-1.5 mt-1">
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Gaps</span>
+                <div className="flex flex-wrap gap-1">
                   {job.missingSkills.slice(0, 3).map((skill) => (
-                    <Badge key={skill} variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-[10px] px-2 py-0.5 rounded-md font-semibold">
+                    <Badge key={skill} className="bg-destructive/10 text-destructive border-0 text-[10px] px-2 py-0.5 rounded-md font-medium">
                       {skill}
                     </Badge>
                   ))}
                   {job.missingSkills.length > 3 && (
-                    <Badge variant="outline" className="bg-surface-container border-border/50 text-muted-foreground text-[10px] px-2 py-0.5 rounded-md font-semibold">
+                    <Badge className="bg-muted text-muted-foreground border-0 text-[10px] px-2 py-0.5 rounded-md font-medium">
                       +{job.missingSkills.length - 3}
                     </Badge>
                   )}
@@ -131,10 +135,10 @@ function JobCard({ job }: { job: JobListing }) {
           </div>
         ) : null}
 
-        <div className="mt-auto pt-4 border-t border-border/50 flex justify-end">
-          <Button asChild className="w-full sm:w-auto rounded-full bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all" onClick={handleApply}>
+        <div className="mt-auto pt-3 flex justify-end" style={{ borderTop: '1px solid var(--border)' }}>
+          <Button asChild className="w-full sm:w-auto rounded-full btn-gradient font-semibold shadow-md text-sm px-5" onClick={handleApply}>
             <a href={job.url} target="_blank" rel="noopener noreferrer">
-              View Opportunity &rarr;
+              View Role &rarr;
             </a>
           </Button>
         </div>
@@ -145,27 +149,23 @@ function JobCard({ job }: { job: JobListing }) {
 
 function JobSkeleton() {
   return (
-    <div className="glass-panel flex flex-col h-full rounded-3xl p-6 border border-border/50 opacity-70">
+    <div className="flex flex-col h-full rounded-2xl p-5 bg-card">
       <div className="mb-4">
-        <Skeleton className="h-8 w-3/4 mb-3 rounded-md bg-surface-container" />
-        <Skeleton className="h-4 w-1/2 rounded-md bg-surface-container" />
-        <div className="mt-5 flex gap-3">
-          <Skeleton className="h-6 w-24 rounded-full bg-surface-container" />
-          <Skeleton className="h-6 w-28 rounded-full bg-surface-container" />
+        <Skeleton className="h-6 w-3/4 mb-2 rounded-md bg-muted" />
+        <Skeleton className="h-4 w-1/2 rounded-md bg-muted" />
+        <div className="mt-4 flex gap-2">
+          <Skeleton className="h-6 w-24 rounded-full bg-muted" />
+          <Skeleton className="h-6 w-28 rounded-full bg-muted" />
         </div>
       </div>
       <div className="flex flex-1 flex-col">
-        <div className="space-y-3 mb-6">
-          <Skeleton className="h-4 w-full rounded-md bg-surface-container" />
-          <Skeleton className="h-4 w-full rounded-md bg-surface-container" />
-          <Skeleton className="h-4 w-2/3 rounded-md bg-surface-container" />
+        <div className="space-y-2 mb-4">
+          <Skeleton className="h-3 w-full rounded-md bg-muted" />
+          <Skeleton className="h-3 w-full rounded-md bg-muted" />
+          <Skeleton className="h-3 w-2/3 rounded-md bg-muted" />
         </div>
-        <div className="space-y-3 mb-6">
-          <Skeleton className="h-3 w-20 rounded-md bg-surface-container" />
-          <div className="flex gap-2"><Skeleton className="h-6 w-16 rounded-md bg-surface-container" /><Skeleton className="h-6 w-20 rounded-md bg-surface-container" /></div>
-        </div>
-        <div className="mt-auto pt-4 border-t border-border/50 flex justify-end">
-          <Skeleton className="h-10 w-32 rounded-full bg-surface-container" />
+        <div className="mt-auto pt-3 flex justify-end" style={{ borderTop: '1px solid var(--border)' }}>
+          <Skeleton className="h-9 w-28 rounded-full bg-muted" />
         </div>
       </div>
     </div>
@@ -173,13 +173,15 @@ function JobSkeleton() {
 }
 
 export default function JobsClient() {
-  // Section 1 State
   const [matchedJobs, setMatchedJobs] = useState<JobListing[]>([]);
   const [matchedLoading, setMatchedLoading] = useState(true);
   const [matchedError, setMatchedError] = useState(false);
+  const [matchedPage, setMatchedPage] = useState(1);
+  const [matchedHasMore, setMatchedHasMore] = useState(false);
+  const [matchedTotal, setMatchedTotal] = useState(0);
+  const [isLoadingMoreMatched, setIsLoadingMoreMatched] = useState(false);
   const [userContext, setUserContext] = useState<{ skills: string[]; location: string }>({ skills: [], location: "" });
 
-  // Section 2 State
   const [searchSkills, setSearchSkills] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchRole, setSearchRole] = useState("");
@@ -197,19 +199,36 @@ export default function JobsClient() {
     loadMatched();
   }, []);
 
-  async function loadMatched() {
-    setMatchedLoading(true);
-    setMatchedError(false);
+  async function loadMatched(pageToLoad = 1) {
+    if (pageToLoad === 1) {
+      setMatchedLoading(true);
+      setMatchedError(false);
+    } else {
+      setIsLoadingMoreMatched(true);
+    }
+
     try {
-      const res = await fetch("/api/jobs/matched");
+      const res = await fetch(`/api/jobs/matched?page=${pageToLoad}`);
       if (!res.ok) throw new Error();
       const data = (await res.json()) as MatchedResponse;
-      setMatchedJobs(data.jobs);
+      
+      if (pageToLoad === 1) {
+        setMatchedJobs(data.jobs);
+      } else {
+        setMatchedJobs(prev => [...prev, ...data.jobs]);
+      }
+      
       setUserContext({ skills: data.userSkills, location: data.userLocation });
+      setMatchedPage(data.page);
+      setMatchedHasMore(data.hasMore);
+      setMatchedTotal(data.total);
     } catch {
-      setMatchedError(true);
+      if (pageToLoad === 1) {
+        setMatchedError(true);
+      }
     } finally {
       setMatchedLoading(false);
+      setIsLoadingMoreMatched(false);
     }
   }
 
@@ -252,200 +271,204 @@ export default function JobsClient() {
   }
 
   return (
-    <div className="flex flex-col gap-6 animate-fade-in-up">
-      <section className="space-y-2">
-        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">
-          Career Radar
-        </p>
-        <h2 className="font-display text-4xl font-bold tracking-tight">
-          Opportunity Network.
+    <div className="flex flex-col gap-5 animate-fade-in-up">
+      <section className="space-y-1.5">
+        <h2 className="font-display text-3xl font-bold tracking-tight">
+          Job Matches
         </h2>
         <p className="text-sm text-muted-foreground font-medium">
-          Roles dynamically ranked by your skill alignment and compensation needs.
+          Roles ranked by your skill alignment and compensation needs.
         </p>
       </section>
 
       {/* Tab Switcher */}
-      <div className="flex mt-4">
-        <div className="inline-flex p-1.5 bg-surface-container-low rounded-full border border-border/50 shadow-inner">
+      <div className="flex">
+        <div className="inline-flex p-1 bg-muted rounded-full">
           <button
             onClick={() => setActiveTab("matched")}
             className={cn(
-              "px-6 py-2 text-sm font-bold rounded-full transition-all duration-300 ease-in-out",
+              "px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200",
               activeTab === "matched"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-surface-container"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Recommended Trajectories
+            Recommended
           </button>
           <button
             onClick={() => setActiveTab("explore")}
             className={cn(
-              "px-6 py-2 text-sm font-bold rounded-full transition-all duration-300 ease-in-out",
+              "px-5 py-2 text-sm font-semibold rounded-full transition-all duration-200",
               activeTab === "explore"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-surface-container"
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Market Explorer
+            Explore
           </button>
         </div>
       </div>
 
       {activeTab === "matched" ? (
-        /* SECTION 1: Your Matched Jobs */
-        <section className="animate-fade-in-up">
-          <header className="mb-8 flex items-center justify-between border-b border-border/50 pb-4">
-            <div>
-               <h3 className="font-display text-2xl font-bold tracking-tight text-foreground">Algorithmic Matches</h3>
-               {!matchedLoading && !matchedError && userContext?.skills?.length > 0 && (
-                 <p className="text-sm text-muted-foreground font-medium mt-1">
-                   {matchedJobs.length} precision roles identified based on your {userContext.skills.slice(0, 2).join(", ")} footprint {userContext.location ? `in ${userContext.location}` : ""}
-                 </p>
-               )}
-            </div>
+        <section>
+          <header className="mb-6 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h3 className="font-display text-xl font-bold tracking-tight">AI-Matched Roles</h3>
+            {!matchedLoading && !matchedError && userContext?.skills?.length > 0 && (
+              <p className="text-sm text-muted-foreground font-medium mt-1">
+                {matchedJobs.length} roles based on {userContext.skills.slice(0, 2).join(", ")} {userContext.location ? `in ${userContext.location}` : ""}
+              </p>
+            )}
           </header>
 
           {matchedLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <JobSkeleton key={i} />
               ))}
             </div>
           ) : matchedError ? (
-            <div className="glass-panel rounded-3xl border border-destructive/20 p-8 text-center text-muted-foreground">
-              <h3 className="font-display text-xl font-bold text-destructive mb-2">Sync Error</h3>
-              <p>Unable to retrieve market opportunities.</p>
-              <Button onClick={loadMatched} className="mt-4 rounded-full">
-                Retry Connection
+            <div className="rounded-2xl bg-destructive/5 p-8 text-center text-muted-foreground">
+              <h3 className="font-display text-lg font-bold text-destructive mb-2">Error loading jobs</h3>
+              <p className="text-sm">Unable to retrieve job matches.</p>
+              <Button onClick={loadMatched} className="mt-4 rounded-full btn-gradient">
+                Retry
               </Button>
             </div>
           ) : matchedJobs.length === 0 ? (
-            <div className="glass-panel rounded-3xl border border-dashed border-border/50 py-16 px-8 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-surface-container mb-6 border border-border">
-                <span className="text-2xl opacity-50">🧭</span>
+            <div className="rounded-2xl bg-card py-14 px-8 text-center" style={{ border: '1px dashed var(--border)' }}>
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
+                <span className="text-2xl">🧭</span>
               </div>
-              <h3 className="font-display text-xl font-bold text-foreground mb-2">Awaiting Context</h3>
+              <h3 className="font-display text-lg font-bold mb-2">No matches yet</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Your profile lacks the sufficient skill data needed to project career trajectories. 
+                Complete your profile with skills to get AI-matched jobs.
               </p>
-              <Button asChild className="mt-6 rounded-full" variant="outline">
-                <Link href="/profile">Inject Skills</Link>
+              <Button asChild className="mt-5 rounded-full btn-gradient" variant="outline">
+                <Link href="/profile">Add Skills</Link>
               </Button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {matchedJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
+            <div className="space-y-6">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
+                {matchedJobs.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+              
+              {matchedHasMore && (
+                <div className="flex flex-col items-center pt-6">
+                  <Button
+                    variant="outline"
+                    onClick={() => loadMatched(matchedPage + 1)}
+                    disabled={isLoadingMoreMatched}
+                    className="w-full sm:w-auto min-w-[180px] rounded-full border-border"
+                  >
+                    {isLoadingMoreMatched ? "Loading..." : "Load More"}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </section>
       ) : (
-        /* SECTION 2: Explore More Jobs */
-        <section className="animate-fade-in-up">
-          <header className="mb-6 flex flex-col gap-2 border-b border-border/50 pb-4">
-            <h3 className="font-display text-2xl font-bold tracking-tight text-foreground">Global Search</h3>
-            <p className="text-sm text-muted-foreground font-medium mb-2">Manually scan the market beyond your algorithmic boundaries.</p>
+        <section>
+          <header className="mb-5 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h3 className="font-display text-xl font-bold tracking-tight">Search Jobs</h3>
+            <p className="text-sm text-muted-foreground font-medium mt-1">Search the market beyond your matched roles.</p>
           </header>
 
-          <form onSubmit={(e) => handleSearch(e, 1)} className="mb-8 glass-panel rounded-3xl p-6 border border-border/50">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 space-y-1.5">
-                <label htmlFor="search-role" className="ml-1 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Job Role</label>
+          <form onSubmit={(e) => handleSearch(e, 1)} className="mb-6 rounded-2xl bg-card p-5">
+            <div className="flex flex-col lg:flex-row gap-3">
+              <div className="flex-1 space-y-1">
+                <label htmlFor="search-role" className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Job Role</label>
                 <Input
                   id="search-role"
                   placeholder="e.g. Data Scientist..."
                   value={searchRole}
                   onChange={(e) => setSearchRole(e.target.value)}
-                  className="w-full rounded-xl bg-surface-container-low border-border/50"
+                  className="w-full rounded-xl bg-muted border-transparent input-focus-glow"
                 />
               </div>
-              <div className="flex-1 space-y-1.5">
-                <label htmlFor="search-skills" className="ml-1 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Skills</label>
+              <div className="flex-1 space-y-1">
+                <label htmlFor="search-skills" className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Skills</label>
                 <Input
                   id="search-skills"
                   placeholder="e.g. Python, React..."
                   value={searchSkills}
                   onChange={(e) => setSearchSkills(e.target.value)}
-                  className="w-full rounded-xl bg-surface-container-low border-border/50"
+                  className="w-full rounded-xl bg-muted border-transparent input-focus-glow"
                 />
               </div>
-              <div className="flex-1 space-y-1.5">
-                <label htmlFor="search-location" className="ml-1 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Location</label>
+              <div className="flex-1 space-y-1">
+                <label htmlFor="search-location" className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Location</label>
                 <Input
                   id="search-location"
                   placeholder="e.g. London, Remote..."
                   value={searchLocation}
                   onChange={(e) => setSearchLocation(e.target.value)}
-                  className="w-full rounded-xl bg-surface-container-low border-border/50"
+                  className="w-full rounded-xl bg-muted border-transparent input-focus-glow"
                 />
               </div>
-              <div className="flex items-end pb-0.5">
-                 <Button type="submit" className="w-full lg:w-32 rounded-xl py-6 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all" disabled={isSearching}>
-                   {isSearching && searchPage === 1 ? "Scanning..." : "Search"}
-                 </Button>
+              <div className="flex items-end">
+                <Button type="submit" className="w-full lg:w-auto rounded-full btn-gradient px-6 py-5 font-semibold" disabled={isSearching}>
+                  {isSearching && searchPage === 1 ? "Searching..." : "Search"}
+                </Button>
               </div>
             </div>
             {searchError && (
-              <div className="mt-4 rounded-lg bg-destructive/10 p-3 border border-destructive/20 text-xs font-semibold text-destructive inline-block">
-                 {searchError}
+              <div className="mt-3 rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive">
+                {searchError}
               </div>
             )}
           </form>
 
           {!hasSearched ? (
-            <div className="glass-panel rounded-3xl border border-dashed border-border/50 py-24 px-8 text-center text-muted-foreground">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-surface-container-low mb-6 border border-border">
-                <svg className="w-6 h-6 text-foreground/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <div className="rounded-2xl bg-card py-16 px-8 text-center text-muted-foreground" style={{ border: '1px dashed var(--border)' }}>
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted mb-4">
+                🔍
               </div>
-              <h3 className="font-display text-xl font-bold text-foreground mb-2">Initiate Market Scan</h3>
-              <p className="mt-2 text-sm max-w-md mx-auto font-medium">
-                Enter parameters above to sweep for targeted opportunities globally.
+              <h3 className="font-display text-lg font-bold text-foreground mb-2">Search the Market</h3>
+              <p className="text-sm max-w-md mx-auto font-medium">
+                Enter search parameters above to find opportunities.
               </p>
             </div>
           ) : isSearching && searchPage === 1 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <JobSkeleton key={i} />
               ))}
             </div>
           ) : searchResults.length === 0 ? (
-            <div className="glass-panel rounded-3xl border border-dashed border-border/50 py-16 px-8 text-center">
-              <h3 className="font-display text-xl font-bold text-foreground mb-2">Zero Anomalies Detected</h3>
-              <p className="mt-2 text-sm text-muted-foreground max-w-sm mx-auto font-medium mb-6">
-                The current parameters returned no valid trajectories. Shift your search variables.
+            <div className="rounded-2xl bg-card py-14 px-8 text-center" style={{ border: '1px dashed var(--border)' }}>
+              <h3 className="font-display text-lg font-bold mb-2">No results</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto font-medium">
+                Try broadening your search (e.g. wider location or fewer skills).
               </p>
-              <div className="flex flex-col items-center space-y-2 text-xs font-mono text-muted-foreground bg-surface-container-low/50 p-4 rounded-xl inline-block text-left">
-                <p>&gt; Widen location scope (e.g. Remote, Worldwide)</p>
-                <p>&gt; Reduce skill constraints</p>
-              </div>
             </div>
           ) : (
-            <div className="space-y-8">
-              <div className="flex items-center gap-3 border-b border-border/50 pb-4">
-                 <h3 className="font-display text-lg font-bold">Scan Results</h3>
-                 <Badge variant="outline" className="rounded-full bg-surface-container border-border/50 font-mono text-[10px]">
-                   {searchTotal} MATCHES
-                 </Badge>
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
+                <h3 className="font-display text-lg font-bold">Results</h3>
+                <Badge className="rounded-full bg-muted text-muted-foreground border-0 font-mono text-[10px]">
+                  {searchTotal} found
+                </Badge>
               </div>
 
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
                 {searchResults.map((job, idx) => (
                   <JobCard key={`${job.id}-${idx}`} job={job} />
                 ))}
               </div>
 
               {searchHasMore && (
-                <div className="flex flex-col items-center pt-8">
+                <div className="flex flex-col items-center pt-6">
                   <Button
                     variant="outline"
                     onClick={() => handleSearch(undefined, searchPage + 1)}
                     disabled={isSearching}
-                    className="w-full sm:w-auto min-w-[200px] rounded-full hover:bg-surface-container-low border-border/80"
+                    className="w-full sm:w-auto min-w-[180px] rounded-full border-border"
                   >
-                    {isSearching ? "Paginating..." : "Extend Scan Horizon"}
+                    {isSearching ? "Loading..." : "Load More"}
                   </Button>
                 </div>
               )}

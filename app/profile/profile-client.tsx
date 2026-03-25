@@ -123,139 +123,142 @@ export function ProfileClient() {
 
   if (loading) {
     return (
-      <div className="space-y-8 animate-fade-in-up">
-        <div className="space-y-4 max-w-2xl">
-           <Skeleton className="h-6 w-32 rounded-full bg-surface-container" />
-           <Skeleton className="h-10 w-64 rounded-xl bg-surface-container" />
+      <div className="space-y-6 animate-fade-in-up">
+        <div className="space-y-3 max-w-2xl">
+          <Skeleton className="h-6 w-28 rounded-full bg-muted" />
+          <Skeleton className="h-8 w-52 rounded-xl bg-muted" />
         </div>
-        <Skeleton className="h-[500px] w-full rounded-3xl bg-surface-container" />
+        <Skeleton className="h-[450px] w-full rounded-2xl bg-muted" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in-up">
-      <section className="space-y-2">
-        <p className="font-mono text-xs font-bold uppercase tracking-widest text-primary/80">User Matrix</p>
-        <h2 className="font-display text-4xl font-bold tracking-tight">Profile Information.</h2>
-        <p className="text-sm text-muted-foreground font-medium">Control your identity parameters to calibrate AI recommendations.</p>
+    <div className="flex flex-col gap-6 animate-fade-in-up">
+      <section className="space-y-1.5">
+        <h2 className="font-display text-3xl font-bold tracking-tight">Profile</h2>
+        <p className="text-sm text-muted-foreground font-medium">Update your skills and goals to improve AI recommendations.</p>
       </section>
 
       {error && (
-        <div className="glass-panel rounded-3xl p-6 border border-destructive/20 bg-destructive/5 text-destructive font-medium text-sm text-center">
-            {error}
+        <div className="rounded-2xl bg-destructive/5 p-4 text-sm font-medium text-destructive text-center">
+          {error}
         </div>
       )}
 
-      <div className="glass-panel rounded-3xl border border-border/50 shadow-inner bg-surface-container-low/30 backdrop-blur-2xl overflow-hidden">
-         <div className="p-6 md:p-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between border-b border-border/50 bg-background/40">
-           <div className="space-y-1 relative">
-             <h3 className="font-display text-2xl font-bold tracking-tight">Profile Configuration</h3>
-             <p className="text-sm text-muted-foreground font-medium">Adjust your professional parameters for precise matchmaking.</p>
-           </div>
-           <Badge variant="outline" className="rounded-full bg-primary/10 text-primary border-primary/20 font-mono text-[10px] px-3 py-1">
-              NEON SYNC ACTIVE
-           </Badge>
-         </div>
+      <div className="rounded-2xl bg-card overflow-hidden">
+        <div className="p-5 md:p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div>
+            <h3 className="font-display text-lg font-bold">Profile Configuration</h3>
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">Adjust your parameters for better matchmaking.</p>
+          </div>
+          <Badge className="rounded-full bg-primary/10 text-primary border-0 text-[10px] font-semibold">
+            SYNCED
+          </Badge>
+        </div>
 
-         <div className="p-6 md:p-8 space-y-8 bg-background/20 relative">
-             <div className="absolute top-0 right-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-             <div className="grid gap-8 md:grid-cols-2">
-               <div className="space-y-3 md:col-span-2 relative">
-                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Technical Arsenal (Comma-separated)</label>
-                 <Textarea
-                   value={skillsText}
-                   onChange={(e) => setSkillsText(e.target.value)}
-                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
-                   placeholder="React, TypeScript, Go, Machine Learning"
-                 />
-               </div>
-               <div className="space-y-3">
-                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Experience Vector</label>
-                 <Input
-                   value={experienceLevel}
-                   onChange={(e) => setExperienceLevel(e.target.value)}
-                   className="h-12 rounded-full border-border/50 bg-surface-container px-5 focus-visible:ring-primary/50 shadow-inner font-medium"
-                   placeholder="e.g. Senior, L5, Lead"
-                 />
-               </div>
-               <div className="space-y-3">
-                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Academic Credentials</label>
-                 <Input
-                   value={education}
-                   onChange={(e) => setEducation(e.target.value)}
-                   className="h-12 rounded-full border-border/50 bg-surface-container px-5 focus-visible:ring-primary/50 shadow-inner font-medium"
-                   placeholder="e.g. MS Computer Science"
-                 />
-               </div>
-               <div className="space-y-3 sm:col-span-2">
-                 <Label htmlFor="location" className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Geographic Coordinates</Label>
-                 <LocationAutocomplete
-                   id="location"
-                   className="w-full h-12 bg-surface-container border-border/50 rounded-full px-5 font-medium shadow-inner"
-                   defaultValue={location}
-                   onLocationSelect={(loc) => setLocation(loc)}
-                   onChange={(e) => setLocation(e.target.value)}
-                   placeholder="e.g. Seattle, WA"
-                 />
-               </div>
-               <div className="space-y-3 md:col-span-2">
-                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Domains of Interest</label>
-                 <Textarea
-                   value={interestsText}
-                   onChange={(e) => setInterestsText(e.target.value)}
-                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
-                   placeholder="Distributed Systems, Real-time rendering"
-                 />
-               </div>
-               <div className="space-y-3 md:col-span-2">
-                 <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Career Targets</label>
-                 <Textarea
-                   value={goalsText}
-                   onChange={(e) => setGoalsText(e.target.value)}
-                   className="min-h-[100px] rounded-2xl border-border/50 bg-surface-container text-foreground p-4 focus-visible:ring-primary/50 shadow-inner resize-none font-medium text-sm"
-                   placeholder="Master system design, transition to management"
-                 />
-               </div>
-             </div>
-             <div className="pt-6 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
-                <Button variant="ghost" onClick={() => router.push("/onboarding")} className="text-muted-foreground hover:text-foreground hover:bg-surface-container rounded-full text-xs font-bold uppercase tracking-widest">Reset Matrix</Button>
-                <Button onClick={() => void onSave()} disabled={saving || !profile} className="h-12 rounded-full px-8 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all w-full md:w-auto">
-                  {saving ? "Synchronizing..." : "Commit Data"}
-                </Button>
-             </div>
-         </div>
+        <div className="p-5 md:p-6 space-y-6">
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Skills (comma-separated)</label>
+              <Textarea
+                value={skillsText}
+                onChange={(e) => setSkillsText(e.target.value)}
+                className="min-h-[80px] rounded-xl bg-muted text-foreground p-4 border-transparent input-focus-glow resize-none text-sm font-medium"
+                placeholder="React, TypeScript, Go, Machine Learning"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Experience Level</label>
+              <Input
+                value={experienceLevel}
+                onChange={(e) => setExperienceLevel(e.target.value)}
+                className="h-11 rounded-full bg-muted px-5 border-transparent input-focus-glow font-medium text-sm"
+                placeholder="e.g. Senior, L5, Lead"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Education</label>
+              <Input
+                value={education}
+                onChange={(e) => setEducation(e.target.value)}
+                className="h-11 rounded-full bg-muted px-5 border-transparent input-focus-glow font-medium text-sm"
+                placeholder="e.g. MS Computer Science"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="location" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location</Label>
+              <LocationAutocomplete
+                id="location"
+                className="w-full h-11 bg-muted border-transparent rounded-full px-5 font-medium text-sm"
+                defaultValue={location}
+                onLocationSelect={(loc) => setLocation(loc)}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Seattle, WA"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Interests</label>
+              <Textarea
+                value={interestsText}
+                onChange={(e) => setInterestsText(e.target.value)}
+                className="min-h-[80px] rounded-xl bg-muted text-foreground p-4 border-transparent input-focus-glow resize-none text-sm font-medium"
+                placeholder="Distributed Systems, Real-time rendering"
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Career Goals</label>
+              <Textarea
+                value={goalsText}
+                onChange={(e) => setGoalsText(e.target.value)}
+                className="min-h-[80px] rounded-xl bg-muted text-foreground p-4 border-transparent input-focus-glow resize-none text-sm font-medium"
+                placeholder="Master system design, transition to management"
+              />
+            </div>
+          </div>
+          <div className="pt-4 flex flex-col md:flex-row items-center justify-between gap-3" style={{ borderTop: '1px solid var(--border)' }}>
+            <Button variant="ghost" onClick={() => router.push("/onboarding")} className="text-muted-foreground hover:text-foreground rounded-full text-xs font-semibold">
+              Redo Onboarding
+            </Button>
+            <Button onClick={() => void onSave()} disabled={saving || !profile} className="h-11 rounded-full px-8 btn-gradient font-semibold w-full md:w-auto">
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="glass-panel rounded-3xl border border-destructive/20 bg-destructive/5 overflow-hidden">
-         <div className="p-6 md:p-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-           <div className="space-y-1">
-             <h3 className="font-display text-2xl font-bold tracking-tight text-destructive">Termination Protocol</h3>
-             <p className="text-sm font-medium opacity-80 text-foreground">Permanently purge your identity matrix and all associated telemetry.</p>
-           </div>
-           <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} className="rounded-full shadow-lg shadow-destructive/20 font-bold tracking-wide">Initiate Purge</Button>
-         </div>
+      {/* Danger zone */}
+      <div className="rounded-2xl bg-destructive/5 overflow-hidden">
+        <div className="p-5 md:p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="font-display text-lg font-bold text-destructive">Delete Account</h3>
+            <p className="text-xs font-medium text-muted-foreground mt-0.5">Permanently remove your account and all data.</p>
+          </div>
+          <Button variant="destructive" onClick={() => setConfirmDeleteOpen(true)} className="rounded-full font-semibold">
+            Delete Account
+          </Button>
+        </div>
       </div>
 
       <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
-        <DialogContent className="glass-panel border-border/50 bg-background/90 backdrop-blur-2xl rounded-3xl p-8 max-w-md shadow-2xl">
-          <DialogHeader className="mb-4">
-            <DialogTitle className="font-display text-2xl font-bold text-destructive">Confirm Termination</DialogTitle>
-            <DialogDescription className="text-sm font-medium text-foreground/80 mt-2">
-              Type <span className="font-mono font-bold text-destructive select-all">delete</span> to authorize total core purge.
+        <DialogContent className="bg-card rounded-2xl p-6 max-w-md shadow-2xl">
+          <DialogHeader className="mb-3">
+            <DialogTitle className="font-display text-xl font-bold text-destructive">Confirm Deletion</DialogTitle>
+            <DialogDescription className="text-sm font-medium text-muted-foreground mt-1.5">
+              Type <span className="font-mono font-bold text-destructive select-all">delete</span> to confirm.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-3">
             <Input
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="Awaiting authorization..."
-              className="h-12 rounded-full border-destructive/30 bg-destructive/5 text-destructive font-mono font-bold text-center tracking-widest focus-visible:ring-destructive/50"
+              placeholder="Type 'delete'"
+              className="h-11 rounded-full bg-destructive/5 border-destructive/20 text-destructive font-mono font-bold text-center tracking-widest input-focus-glow"
             />
           </div>
-          <DialogFooter className="mt-2 flex items-center gap-3 w-full">
-            <Button variant="ghost" className="flex-1 rounded-full" onClick={() => setConfirmDeleteOpen(false)}>Abort</Button>
-            <Button variant="destructive" className="flex-1 rounded-full font-bold" onClick={() => void onDeleteAccount()} disabled={!deleteEnabled || saving}>Execute</Button>
+          <DialogFooter className="mt-1 flex items-center gap-3 w-full">
+            <Button variant="ghost" className="flex-1 rounded-full" onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+            <Button variant="destructive" className="flex-1 rounded-full font-semibold" onClick={() => void onDeleteAccount()} disabled={!deleteEnabled || saving}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

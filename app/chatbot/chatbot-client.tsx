@@ -5,7 +5,6 @@ import remarkGfm from "remark-gfm";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CHAT_MODEL_OPTIONS } from "@/lib/constants";
@@ -136,147 +135,119 @@ export function ChatbotClient() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-140px)] flex-col gap-6 animate-fade-in-up">
-      <div className="flex flex-col gap-2">
-         <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary/80">
-            Secure Communications
-         </p>
-         <h2 className="font-display text-4xl font-bold tracking-tight">
-            AI Career Chatbot.
-         </h2>
-         <p className="text-sm text-muted-foreground font-medium">
-            Ask about roles, skills, interviews, and career strategy.
-         </p>
+    <div className="flex flex-col animate-fade-in-up" style={{ height: 'calc(100dvh - 180px)' }}>
+      {/* Title — compact on mobile */}
+      <div className="mb-3 sm:mb-4 shrink-0">
+        <h2 className="font-display text-xl sm:text-3xl font-bold tracking-tight">
+          AI Career Coach
+        </h2>
+        <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-0.5 hidden sm:block">
+          Ask about roles, skills, interviews, and career strategy.
+        </p>
       </div>
 
-      <div className="glass-panel rounded-3xl flex h-full flex-col overflow-hidden border border-border/50 shadow-inner bg-surface-container-low/30 backdrop-blur-2xl">
-        <div className="flex flex-col gap-4 border-b border-border/50 p-6 bg-background/40 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3">
-             <div className="relative flex h-3 w-3 items-center justify-center">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary"></span>
-             </div>
-             <span className="font-mono text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                Uplink Active
-             </span>
+      {/* Chat Card — takes remaining space */}
+      <div className="rounded-2xl flex flex-1 min-h-0 flex-col overflow-hidden bg-card">
+        {/* Chat header — single row on mobile */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2 sm:px-4 sm:py-3 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-secondary opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-secondary" />
+            </span>
+            <select
+              className="h-7 rounded-full bg-muted px-2.5 text-[11px] font-medium outline-none focus-visible:ring-1 focus-visible:ring-primary/50"
+              value={modelId}
+              onChange={(e) => setModelId(e.target.value)}
+            >
+              {CHAT_MODEL_OPTIONS.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-               <label className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Model</label>
-               <select
-                 className="h-10 rounded-full border border-border/50 bg-surface-container px-4 text-xs font-medium outline-none focus-visible:ring-1 focus-visible:ring-primary/50 shadow-inner"
-                 value={modelId}
-                 onChange={(e) => setModelId(e.target.value)}
-               >
-                 {CHAT_MODEL_OPTIONS.map((m) => (
-                   <option key={m.id} value={m.id}>
-                     {m.id}
-                   </option>
-                 ))}
-               </select>
-               <Badge variant="outline" className="rounded-full bg-primary/10 text-primary border-primary/20 text-[10px]">
-                 {activeModelLabel}
-               </Badge>
-            </div>
-            
-            <Button variant="outline" size="sm" onClick={() => void onClear()} className="rounded-full border-border/50 bg-background hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 transition-colors">
-              Clear Log
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => void onClear()} className="rounded-full text-[11px] h-7 px-2.5 hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0">
+            Clear
+          </Button>
         </div>
 
-        <div className="flex flex-1 flex-col gap-4 overflow-hidden p-6 md:p-8">
+        {/* Messages area — scrollable */}
+        <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
           {error ? (
-            <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4 text-sm font-medium text-destructive text-center">
+            <div className="rounded-xl bg-destructive/5 mx-3 mt-2 p-2.5 text-xs font-medium text-destructive text-center shrink-0">
               {error}
             </div>
           ) : null}
 
-          <div className="flex flex-1 flex-col gap-6 overflow-y-auto pr-2 custom-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3 custom-scrollbar">
             {loading ? (
-              <div className="space-y-4 max-w-2xl">
-                <Skeleton className="h-20 w-[80%] rounded-2xl rounded-bl-none bg-surface-container" />
-                <Skeleton className="h-24 w-[90%] rounded-2xl rounded-bl-none bg-surface-container ml-auto" />
-                <Skeleton className="h-16 w-[70%] rounded-2xl rounded-bl-none bg-surface-container" />
+              <div className="space-y-3 max-w-2xl">
+                <Skeleton className="h-14 w-[80%] rounded-2xl bg-muted" />
+                <Skeleton className="h-16 w-[75%] rounded-2xl bg-muted ml-auto" />
+                <Skeleton className="h-12 w-[70%] rounded-2xl bg-muted" />
               </div>
             ) : messages.length === 0 ? (
-               <div className="h-full flex flex-col items-center justify-center text-center px-4 rounded-3xl border border-dashed border-border/50 bg-background/20 mt-4 max-h-64">
-                   <div className="mb-4 h-12 w-12 rounded-full border-2 border-border/50 flex items-center justify-center text-muted-foreground opacity-50">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                   </div>
-                   <p className="text-sm text-muted-foreground font-medium">Comm-link established. Input query to begin.</p>
-               </div>
-            ) : (
-              messages.map((m, idx) => (
-                <div
-                  key={`${m.role}_${idx}_${m.created_at ?? ""}`}
-                  className={
-                    m.role === "user"
-                      ? "ml-auto w-full max-w-[85%] rounded-3xl rounded-br-sm border border-primary/20 bg-primary/10 shadow-sm p-5"
-                      : "mr-auto w-full max-w-[85%] rounded-3xl rounded-bl-sm border border-border/50 bg-surface-container-low p-5 shadow-sm"
-                  }
-                >
-                  <div className="flex items-center justify-between gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                        {m.role === "assistant" ? (
-                             <Badge variant="outline" className="rounded-full bg-secondary/10 text-secondary border-secondary/20 text-[10px]">
-                                AI SYSTEM
-                             </Badge>
-                        ) : (
-                             <Badge variant="outline" className="rounded-full bg-primary/20 text-primary border-primary/30 text-[10px]">
-                                USER
-                             </Badge>
-                        )}
-                        <span className="font-mono text-[10px] text-muted-foreground/70">
-                            {formatTime(m.created_at)}
-                        </span>
-                    </div>
-                    
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 px-2 text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:bg-surface-container rounded-full"
-                      onClick={() => void copy(m.content)}
-                    >
-                      Copy
-                    </Button>
-                  </div>
-                  <div
-                    className={`text-sm leading-relaxed markdown-content ${m.role === "assistant" ? "text-foreground" : "text-foreground font-medium"
-                      }`}
-                  >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {m.content}
-                    </ReactMarkdown>
-                  </div>
-                </div>
-              ))
-            )}
-
-            {typing ? (
-              <div className="mr-auto w-full max-w-[70%] rounded-3xl rounded-bl-sm border border-border/50 bg-surface-container-low p-5 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <Badge variant="outline" className="rounded-full bg-secondary/10 text-secondary border-secondary/20 text-[10px] animate-pulse">
-                     PROCESSING
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1.5 h-6">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:150ms]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:300ms]" />
-                </div>
+              <div className="h-full flex flex-col items-center justify-center text-center px-4 rounded-2xl max-h-40" style={{ border: '1px dashed var(--border)' }}>
+                <div className="mb-2 text-xl">💬</div>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium">Start a conversation to get career advice.</p>
               </div>
-            ) : null}
+            ) : (
+              <>
+                {messages.map((m, idx) => (
+                  <div
+                    key={`${m.role}_${idx}_${m.created_at ?? ""}`}
+                    className={
+                      m.role === "user"
+                        ? "ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-sm bg-primary/10 px-3 py-2.5 sm:px-4 sm:py-3"
+                        : "mr-auto w-fit max-w-[85%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2.5 sm:px-4 sm:py-3"
+                    }
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      {m.role === "assistant" ? (
+                        <Badge className="rounded-full bg-secondary/10 text-secondary border-0 text-[10px] h-4 px-1.5">AI</Badge>
+                      ) : (
+                        <Badge className="rounded-full bg-primary/20 text-primary border-0 text-[10px] h-4 px-1.5">You</Badge>
+                      )}
+                      <span className="text-[10px] text-muted-foreground/60 font-mono">{formatTime(m.created_at)}</span>
+                      <button
+                        className="ml-auto text-[10px] text-muted-foreground/50 hover:text-muted-foreground font-semibold uppercase tracking-wider"
+                        onClick={() => void copy(m.content)}
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <div className={`text-xs sm:text-sm leading-relaxed markdown-content ${m.role === "assistant" ? "text-foreground" : "text-foreground font-medium"}`}>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {m.content}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+                ))}
 
-            <div ref={bottomRef} />
+                {typing ? (
+                  <div className="mr-auto w-fit max-w-[70%] rounded-2xl rounded-bl-sm bg-muted px-3 py-2.5">
+                    <Badge className="rounded-full bg-secondary/10 text-secondary border-0 text-[10px] animate-pulse mb-1">Thinking...</Badge>
+                    <div className="flex items-center gap-1.5 h-4">
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:150ms]" />
+                      <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/40 [animation-delay:300ms]" />
+                    </div>
+                  </div>
+                ) : null}
+
+                <div ref={bottomRef} />
+              </>
+            )}
           </div>
 
-          <div className="mt-2 flex flex-col gap-3 md:flex-row relative">
+          {/* Input — always at bottom, single row */}
+          <div className="shrink-0 flex items-center gap-2 p-3 sm:p-4" style={{ borderTop: '1px solid var(--border)' }}>
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Awaiting query input..."
-              className="h-14 rounded-full border-border/50 bg-background/50 px-6 font-medium shadow-inner backdrop-blur focus-visible:ring-primary/50 text-base"
+              placeholder="Ask anything..."
+              className="h-10 sm:h-11 flex-1 rounded-full bg-muted px-4 font-medium border-transparent input-focus-glow text-xs sm:text-sm"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -284,12 +255,12 @@ export function ChatbotClient() {
                 }
               }}
             />
-            <Button 
-                onClick={() => void onSend()} 
-                disabled={typing || !input.trim()}
-                className="h-14 rounded-full px-8 bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 md:w-auto w-full transition-all"
-             >
-                <span className="tracking-wider uppercase text-xs">Transmit</span>
+            <Button
+              onClick={() => void onSend()}
+              disabled={typing || !input.trim()}
+              className="h-10 sm:h-11 rounded-full px-4 sm:px-6 btn-gradient font-semibold text-xs sm:text-sm shrink-0"
+            >
+              Send
             </Button>
           </div>
         </div>
@@ -305,16 +276,16 @@ const tableStyles = `
   margin-bottom: 1rem;
 }
 .markdown-content th, .markdown-content td {
-  border: 1px solid hsl(var(--border));
+  border: 1px solid var(--border);
   padding: 0.5rem;
   text-align: left;
 }
 .markdown-content th {
-  background-color: hsl(var(--muted)/0.5);
+  background-color: var(--muted);
   font-weight: 600;
 }
 .markdown-content tr:nth-child(even) {
-  background-color: hsl(var(--muted)/0.2);
+  background-color: var(--accent);
 }
 .markdown-content p {
   margin-bottom: 0.5rem;
@@ -333,4 +304,3 @@ if (typeof document !== 'undefined') {
   style.textContent = tableStyles;
   document.head.append(style);
 }
-

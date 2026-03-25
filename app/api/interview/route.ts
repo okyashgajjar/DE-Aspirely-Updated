@@ -123,7 +123,13 @@ export async function POST(req: NextRequest) {
       ...transcript
     ]);
 
-    let feedback: any;
+    interface Feedback {
+      score: number;
+      strengths: string[];
+      improvements: string[];
+      summary: string;
+    }
+    let feedback: Feedback;
     try {
       feedback = JSON.parse(feedbackRaw.replace(/```json|```/g, ""));
     } catch {

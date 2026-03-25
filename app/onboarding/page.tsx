@@ -98,22 +98,45 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-2xl rounded-xl border border-border bg-background/60 p-8 shadow-sm backdrop-blur">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Let&apos;s get to know you
-            </h1>
-            <p className="text-sm text-slate-500">
-              Step {step} of {TOTAL_STEPS}
-            </p>
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-10 relative overflow-hidden">
+      {/* Background orbs */}
+      <div className="absolute top-1/3 left-1/3 h-[400px] w-[400px] rounded-full bg-primary/8 blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 h-[350px] w-[350px] rounded-full bg-tertiary/6 blur-[120px] pointer-events-none" />
+
+      <div className="w-full max-w-2xl glass-panel rounded-2xl p-8 sm:p-10 relative z-10 animate-fade-in-up">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="font-display text-2xl font-bold tracking-tight">
+                Let&apos;s get to know you
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Step {step} of {TOTAL_STEPS}
+              </p>
+            </div>
           </div>
-          <div className="flex h-2 flex-1 rounded-full bg-muted/60 ml-6">
+          {/* Progress bar */}
+          <div className="flex h-1.5 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-2 rounded-full bg-accent"
+              className="h-full rounded-full bg-gradient-to-r from-primary to-tertiary transition-all duration-500 ease-out animate-progress-fill"
               style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
             />
+          </div>
+          {/* Step dots */}
+          <div className="flex items-center justify-center gap-2 mt-4">
+            {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                  i + 1 < step
+                    ? "bg-secondary"
+                    : i + 1 === step
+                    ? "bg-primary w-6"
+                    : "bg-muted"
+                }`}
+              />
+            ))}
           </div>
         </div>
 
@@ -124,18 +147,19 @@ export default function OnboardingPage() {
             autoComplete="off"
           >
             {step === 1 && (
-              <section className="space-y-4">
-                <h2 className="text-base font-medium">Personal info</h2>
+              <section className="space-y-4 animate-fade-in-up">
+                <h2 className="text-base font-semibold">Personal info</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Name</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-muted-foreground">Name</label>
                     <input
-                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="block w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none transition-all input-focus-glow border border-transparent focus:border-primary/30"
+                      placeholder="Your full name"
                       {...register("name")}
                     />
                   </div>
-                  <div className="space-y-1">
-                    <label className="text-sm font-medium">Location</label>
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-muted-foreground">Location</label>
                     <LocationAutocomplete
                       className="w-full"
                       defaultValue={watch("location")}
@@ -143,10 +167,11 @@ export default function OnboardingPage() {
                       placeholder="e.g. London, UK"
                     />
                   </div>
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-sm font-medium">Education</label>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="text-sm font-medium text-muted-foreground">Education</label>
                     <input
-                      className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                      className="block w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none transition-all input-focus-glow border border-transparent focus:border-primary/30"
+                      placeholder="e.g. BSc Computer Science"
                       {...register("education")}
                     />
                   </div>
@@ -155,9 +180,9 @@ export default function OnboardingPage() {
             )}
 
             {step === 2 && (
-              <section className="space-y-4">
-                <h2 className="text-base font-medium">Current skills</h2>
-                <p className="text-sm text-slate-500">
+              <section className="space-y-4 animate-fade-in-up">
+                <h2 className="text-base font-semibold">Current skills</h2>
+                <p className="text-sm text-muted-foreground">
                   Select your current strengths and add anything missing.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -167,22 +192,23 @@ export default function OnboardingPage() {
                         key={skill}
                         type="button"
                         onClick={() => toggleArrayValue("skills", skill)}
-                        className={`rounded-full border px-3 py-1 text-xs ${selectedSkills?.includes(skill)
-                          ? "bg-accent text-accent-foreground border-transparent"
-                          : "border-border bg-background text-foreground"
-                          }`}
+                        className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
+                          selectedSkills?.includes(skill)
+                            ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                            : "bg-muted text-foreground hover:bg-accent"
+                        }`}
                       >
                         {skill}
                       </button>
                     ),
                   )}
                 </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">
                     Add a custom skill
                   </label>
                   <input
-                    className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="block w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none transition-all input-focus-glow border border-transparent focus:border-primary/30"
                     {...register("custom_skill")}
                     placeholder="e.g. Data storytelling, Prompt engineering"
                   />
@@ -191,14 +217,14 @@ export default function OnboardingPage() {
             )}
 
             {step === 3 && (
-              <section className="space-y-4">
-                <h2 className="text-base font-medium">
+              <section className="space-y-4 animate-fade-in-up">
+                <h2 className="text-base font-semibold">
                   Experience level & history
                 </h2>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Experience level</label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Experience level</label>
                   <select
-                    className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="block w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none transition-all input-focus-glow border border-transparent focus:border-primary/30"
                     {...register("experience_level")}
                   >
                     <option value="">Select level</option>
@@ -209,11 +235,11 @@ export default function OnboardingPage() {
                     <option value="lead">Lead / Manager</option>
                   </select>
                 </div>
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Experience history</label>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium text-muted-foreground">Experience history</label>
                   <textarea
                     rows={4}
-                    className="block w-full rounded-md border border-border bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    className="block w-full rounded-xl bg-muted px-4 py-3 text-sm outline-none transition-all input-focus-glow border border-transparent focus:border-primary/30 resize-none"
                     {...register("experience_history")}
                     placeholder="Summarize your recent roles, projects, or internships."
                   />
@@ -222,9 +248,9 @@ export default function OnboardingPage() {
             )}
 
             {step === 4 && (
-              <section className="space-y-4">
-                <h2 className="text-base font-medium">Interests</h2>
-                <p className="text-sm text-slate-500">
+              <section className="space-y-4 animate-fade-in-up">
+                <h2 className="text-base font-semibold">Interests</h2>
+                <p className="text-sm text-muted-foreground">
                   What areas are you most excited to grow in?
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -239,10 +265,11 @@ export default function OnboardingPage() {
                       key={interest}
                       type="button"
                       onClick={() => toggleArrayValue("interests", interest)}
-                      className={`rounded-full border px-3 py-1 text-xs ${selectedInterests?.includes(interest)
-                        ? "bg-accent text-accent-foreground border-transparent"
-                        : "border-border bg-background text-foreground"
-                        }`}
+                      className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
+                        selectedInterests?.includes(interest)
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                          : "bg-muted text-foreground hover:bg-accent"
+                      }`}
                     >
                       {interest}
                     </button>
@@ -252,11 +279,10 @@ export default function OnboardingPage() {
             )}
 
             {step === 5 && (
-              <section className="space-y-4">
-                <h2 className="text-base font-medium">Career goals</h2>
-                <p className="text-sm text-slate-500">
-                  Share where you&apos;d like your career to be in the next 12–24
-                  months.
+              <section className="space-y-4 animate-fade-in-up">
+                <h2 className="text-base font-semibold">Career goals</h2>
+                <p className="text-sm text-muted-foreground">
+                  Share where you&apos;d like your career to be in the next 12–24 months.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
@@ -270,10 +296,11 @@ export default function OnboardingPage() {
                       key={goal}
                       type="button"
                       onClick={() => toggleArrayValue("goals", goal)}
-                      className={`rounded-full border px-3 py-1 text-xs ${selectedGoals?.includes(goal)
-                        ? "bg-accent text-accent-foreground border-transparent"
-                        : "border-border bg-background text-foreground"
-                        }`}
+                      className={`rounded-full px-4 py-2 text-xs font-medium transition-all duration-200 ${
+                        selectedGoals?.includes(goal)
+                          ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                          : "bg-muted text-foreground hover:bg-accent"
+                      }`}
                     >
                       {goal}
                     </button>
@@ -282,9 +309,9 @@ export default function OnboardingPage() {
               </section>
             )}
 
-            <div className="mt-8 flex items-center justify-between">
+            <div className="mt-8 flex items-center justify-between pt-4" style={{ borderTop: '1px solid var(--border)' }}>
               {step > 1 ? (
-                <Button type="button" variant="ghost" onClick={prevStep}>
+                <Button type="button" variant="ghost" onClick={prevStep} className="rounded-full">
                   Back
                 </Button>
               ) : (
@@ -297,15 +324,16 @@ export default function OnboardingPage() {
                   variant="outline"
                   onClick={skipStep}
                   disabled={submitting}
+                  className="rounded-full border-border"
                 >
-                  Skip this step
+                  Skip
                 </Button>
                 {step === TOTAL_STEPS ? (
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? "Finishing..." : "Finish onboarding"}
+                  <Button type="submit" disabled={submitting} className="rounded-full btn-gradient px-6 font-semibold">
+                    {submitting ? "Finishing..." : "Complete Setup"}
                   </Button>
                 ) : (
-                  <Button type="button" onClick={nextStep}>
+                  <Button type="button" onClick={nextStep} className="rounded-full btn-gradient px-6 font-semibold">
                     Continue
                   </Button>
                 )}
@@ -317,4 +345,3 @@ export default function OnboardingPage() {
     </main>
   );
 }
-
