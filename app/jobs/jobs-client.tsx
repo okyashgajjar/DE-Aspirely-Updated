@@ -329,7 +329,7 @@ export default function JobsClient() {
             <div className="rounded-2xl bg-destructive/5 p-8 text-center text-muted-foreground">
               <h3 className="font-display text-lg font-bold text-destructive mb-2">Error loading jobs</h3>
               <p className="text-sm">Unable to retrieve job matches.</p>
-              <Button onClick={loadMatched} className="mt-4 rounded-full btn-gradient">
+              <Button onClick={() => loadMatched()} className="mt-4 rounded-full btn-gradient">
                 Retry
               </Button>
             </div>
