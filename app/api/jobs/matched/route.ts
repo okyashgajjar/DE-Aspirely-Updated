@@ -36,25 +36,30 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const goals = profile.goals as string[] ?? [];
-  const primaryGoal = goals[0] || "software engineer";
+  const userSkillsList = (profile?.skills as string[]) || [];
+  const interests = (profile?.interests as string[]) || [];
+  
+  // Use up to 2 skills/interests to keep search broad
+  const searchTerms = [...userSkillsList, ...interests].filter(Boolean);
+  const searchWhat = searchTerms.slice(0, 2).join(" ") || "professional";
+  
   const rawLocation = user?.location || "";
   const simplifiedLocation = rawLocation.split(',')[0].trim();
   
   // Use 'in' country for India locations, else 'gb'
   const country = /india|ahmedabad|mumbai|delhi|bangalore|bengaluru/i.test(rawLocation) ? "in" : "gb";
 
-  console.log(`[JobsMatched] Fetching for: ${primaryGoal} in ${simplifiedLocation} (Country: ${country})`);
+  console.log(`[JobsMatched] Fetching for: ${searchWhat} in ${simplifiedLocation} (Country: ${country})`);
 
   // Fetch a larger pool of jobs (e.g. 50) to evaluate and rank locally
   const { jobs: rawJobs } = await fetchAdzunaJobs({
-    what: primaryGoal,
+    what: searchWhat,
     where: simplifiedLocation || undefined,
     country,
     resultsPerPage: 50,
   });
 
-  const userSkillsList = (profile?.skills as string[]) || [];
+
   
   // Cross-validate skills and calculate match scores
   const evaluatedJobs = rawJobs.map((job) => {

@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       if (goals.length > 0) baseTokens.push(...goals);
     }
 
-    const what = baseTokens.length > 0 ? baseTokens.join(" ") : "software engineer";
+    const what = baseTokens.length > 0 ? baseTokens.slice(0, 2).join(" ") : "professional";
     const where = effectiveMode === "location" ? explicitLocation?.trim() || userLocation || undefined : undefined;
 
     let jobs: JobListing[] = [];

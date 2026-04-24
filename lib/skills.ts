@@ -8,39 +8,22 @@ export function extractSkillsFromText(text: string): string[] {
   const normalized = text.toLowerCase();
 
   const knownSkills = [
-    "react",
-    "next.js",
-    "typescript",
-    "javascript",
-    "node.js",
-    "python",
-    "django",
-    "flask",
-    "java",
-    "spring",
-    "kotlin",
-    "go",
-    "ruby",
-    "rails",
-    "sql",
-    "postgres",
-    "mysql",
-    "mongodb",
-    "aws",
-    "gcp",
-    "azure",
-    "docker",
-    "kubernetes",
-    "redis",
-    "graphql",
-    "rest",
-    "html",
-    "css",
-    "tailwind",
-    "system design",
-    "data engineering",
-    "ml",
-    "machine learning",
+    // Tech & Engineering
+    "react", "next.js", "typescript", "javascript", "node.js", "python",
+    "django", "flask", "java", "spring", "kotlin", "go", "ruby", "rails",
+    "sql", "postgres", "mysql", "mongodb", "aws", "gcp", "azure", "docker",
+    "kubernetes", "redis", "graphql", "rest", "html", "css", "tailwind",
+    "system design", "data engineering", "ml", "machine learning",
+    // Business & Marketing
+    "writing", "research", "communication", "marketing", "sales", "management",
+    "leadership", "customer service", "design", "planning", "strategy", "analysis",
+    "editing", "public speaking", "social media", "seo", "content creation",
+    "negotiation", "accounting", "finance", "human resources", "recruiting",
+    "project management", "event planning", "budgeting", "data analysis",
+    "storytelling", "copywriting", "journalism", "politics", "history",
+    // Product & UX
+    "ui/ux", "product management", "figma", "wireframing", "prototyping",
+    "user research", "agile", "scrum", "jira", "operations", "logistics"
   ];
 
   const found = new Set<string>();

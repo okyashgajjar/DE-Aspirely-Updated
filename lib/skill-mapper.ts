@@ -39,6 +39,24 @@ export function mapSkillsToJobRoles(skills: string[]): string[] {
         "product management": ["Product Manager"],
         design: ["UX/UI Designer", "Product Designer"],
         ux: ["UX Researcher", "UX Designer"],
+        // Non-tech additions
+        writing: ["Copywriter", "Technical Writer", "Content Manager"],
+        communication: ["Communications Manager", "Public Relations Specialist"],
+        research: ["Research Analyst", "User Researcher", "Market Researcher"],
+        marketing: ["Marketing Manager", "Digital Marketer"],
+        sales: ["Account Executive", "Sales Representative"],
+        management: ["Operations Manager", "General Manager"],
+        leadership: ["Director", "Team Lead"],
+        "customer service": ["Customer Success Manager", "Support Specialist"],
+        planning: ["Project Manager", "Event Planner"],
+        analysis: ["Business Analyst", "Data Analyst"],
+        accounting: ["Accountant", "Financial Controller"],
+        finance: ["Financial Analyst", "Finance Manager"],
+        "human resources": ["HR Manager", "Recruiter"],
+        recruiting: ["Talent Acquisition", "Technical Recruiter"],
+        journalism: ["Journalist", "Editor"],
+        politics: ["Political Analyst", "Policy Advisor"],
+        history: ["Historian", "Archivist", "Research Assistant"]
     };
 
     const normalizedInput = skills.map((s) => s.toLowerCase().trim());
@@ -51,7 +69,7 @@ export function mapSkillsToJobRoles(skills: string[]): string[] {
 
     // If no specific roles found, return a generic fallback
     if (roles.size === 0) {
-        return ["Software Engineer"];
+        return ["Professional"];
     }
 
     return Array.from(roles);

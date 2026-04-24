@@ -86,7 +86,7 @@ export default async function DashboardPage() {
       <div className="space-y-2">
         <h3 className="font-display text-base font-bold px-1">Performance Trajectory</h3>
         <div className="rounded-2xl bg-card p-4 sm:p-5 shadow-sm">
-          <DashboardChart interviews={interviewList as any[]} />
+          <DashboardChart interviews={interviewList} />
         </div>
       </div>
 

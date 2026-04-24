@@ -133,7 +133,7 @@ export async function PATCH(req: NextRequest) {
         try {
           const nonEmptySkills = nextSkills.map(normalizeSkill).filter(Boolean);
           const queryTokens = nonEmptySkills.length > 0 ? nonEmptySkills : nextGoals.length > 0 ? nextGoals : nextInterests;
-          const { jobs } = await fetchAdzunaJobs({ what: queryTokens.join(" ") || "software engineer", resultsPerPage: 5 });
+          const { jobs } = await fetchAdzunaJobs({ what: queryTokens.slice(0, 2).join(" ") || "professional", resultsPerPage: 5 });
           const jobSkills = extractSkillsFromJobs(jobs);
           const userSkillsNorm = Array.from(new Set(nextSkills.map(normalizeSkill).filter(Boolean)));
           const jobSkillsNorm = Array.from(new Set(jobSkills.map(normalizeSkill).filter(Boolean)));

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { ChatMessage, MockInterview } from "@/types";
-import { CHAT_MODEL_OPTIONS, MOCK_INTERVIEW_MODEL_ID } from "@/lib/constants";
+import { CHAT_MODEL_OPTIONS } from "@/lib/constants";
 
 type ChatState = {
   modelId: string;

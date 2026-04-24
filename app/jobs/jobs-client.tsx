@@ -178,7 +178,6 @@ export default function JobsClient() {
   const [matchedError, setMatchedError] = useState(false);
   const [matchedPage, setMatchedPage] = useState(1);
   const [matchedHasMore, setMatchedHasMore] = useState(false);
-  const [matchedTotal, setMatchedTotal] = useState(0);
   const [isLoadingMoreMatched, setIsLoadingMoreMatched] = useState(false);
   const [userContext, setUserContext] = useState<{ skills: string[]; location: string }>({ skills: [], location: "" });
 
@@ -221,7 +220,7 @@ export default function JobsClient() {
       setUserContext({ skills: data.userSkills, location: data.userLocation });
       setMatchedPage(data.page);
       setMatchedHasMore(data.hasMore);
-      setMatchedTotal(data.total);
+
     } catch {
       if (pageToLoad === 1) {
         setMatchedError(true);

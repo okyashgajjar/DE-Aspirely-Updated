@@ -1,5 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, index, uniqueIndex, real, blob } from "drizzle-orm/sqlite-core";
-import { relations } from "drizzle-orm";
+import { sqliteTable, text, integer, primaryKey, index, real } from "drizzle-orm/sqlite-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 
 // --- NextAuth.js Tables ---

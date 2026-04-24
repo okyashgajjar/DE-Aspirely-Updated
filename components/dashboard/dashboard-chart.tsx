@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 interface InterviewData {
-  created_at: string;
+  created_at: string | number | Date;
   score: number;
 }
 

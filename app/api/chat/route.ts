@@ -24,7 +24,7 @@ async function buildLLMContext(userId: string): Promise<LLMContext> {
   const missing_skills = (gapRow?.missing_skills as string[] ?? []);
   const goals = (profile?.goals as string[] ?? []);
   const experience_level = profile?.experience_level ?? "intermediate";
-  const primaryGoal = goals[0] ?? "software engineer";
+  const primaryGoal = [...current_skills, ...(profile?.interests as string[] ?? [])].slice(0, 2).join(" ") || "professional";
 
   let latest_jobs: JobListing[] = [];
   try {

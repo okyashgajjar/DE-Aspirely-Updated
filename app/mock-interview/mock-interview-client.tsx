@@ -73,7 +73,7 @@ function VoiceUISkeletonLoader() {
           <div className="flex h-10 items-end gap-1.5 flex-1">
             {Array.from({ length: 16 }).map((_, idx) => (
               <div
-                // eslint-disable-next-line react/no-array-index-key
+
                 key={idx}
                 className="w-1.5 rounded-full bg-primary/20"
                 style={{
@@ -105,8 +105,6 @@ export function MockInterviewClient() {
     submitting,
     setRole,
     startSession,
-    addTranscriptLine,
-    setCurrentQuestion,
     endSession,
     setPast,
     setError,
@@ -132,7 +130,7 @@ export function MockInterviewClient() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [setPast]);
 
   async function start() {
     setError(null);
@@ -256,7 +254,7 @@ export function MockInterviewClient() {
             <h3 className="font-display text-lg font-bold">Session Feedback</h3>
             <p className="text-xs text-muted-foreground font-medium mt-0.5">Latest session evaluation.</p>
           </div>
-          
+
           {post ? (
             <div className="space-y-5">
               <div className="flex items-center gap-5">
@@ -268,7 +266,7 @@ export function MockInterviewClient() {
                   <p className="text-xs font-semibold text-primary uppercase tracking-wider mt-0.5">Overall Score</p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="rounded-xl bg-secondary/5 p-4">
                   <p className="text-[10px] font-bold text-secondary uppercase tracking-widest flex items-center gap-1.5 mb-2">
@@ -282,7 +280,7 @@ export function MockInterviewClient() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="rounded-xl bg-destructive/5 p-4">
                   <p className="text-[10px] font-bold text-destructive uppercase tracking-widest flex items-center gap-1.5 mb-2">
                     ⚠ Improvements
@@ -295,7 +293,7 @@ export function MockInterviewClient() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="rounded-xl bg-muted p-4">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Summary</p>
                   <p className="text-sm text-muted-foreground leading-relaxed font-medium">{post.summary}</p>
@@ -315,7 +313,7 @@ export function MockInterviewClient() {
             <h3 className="font-display text-lg font-bold">Past Sessions</h3>
             <p className="text-xs text-muted-foreground font-medium mt-0.5">Historical records.</p>
           </div>
-          
+
           <div className="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar">
             {past.length === 0 ? (
               <div className="h-full min-h-[10rem] flex flex-col items-center justify-center text-center rounded-xl" style={{ border: '1px dashed var(--border)' }}>

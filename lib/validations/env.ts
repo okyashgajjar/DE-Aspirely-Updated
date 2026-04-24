@@ -12,8 +12,8 @@ const serverEnvSchema = z.object({
   YOUTUBE_ANALYTICS_SERVICE_ACCOUNT_NAME: z.string().min(1),
   YOUTUBE_ANALYTICS_SERVICE_KEY: z.string().min(1),
   YOUTUBE_ANALYTICS_EMAIL: z.string().min(1),
-  DATABASE_URL: z.string().url().optional(),
-  DATABASE_DIRECT_URL: z.string().url().optional(),
+  DATABASE_URL: z.string().min(1).optional(),
+  DATABASE_DIRECT_URL: z.string().min(1).optional(),
 });
 
 type ServerEnv = z.infer<typeof serverEnvSchema>;

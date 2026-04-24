@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
         orderBy: [desc(onboardingProfiles.completed_at)],
     });
 
-    const searchWhat = [role, skills].filter(Boolean).join(" ") || (onboardingRow?.skills as string[] ?? []).join(" ") || "software engineer";
+    const searchWhat = [role, skills].filter(Boolean).join(" ") || (onboardingRow?.skills as string[] ?? []).slice(0, 2).join(" ") || "professional";
     const rawWhere = location.trim() || onboardingRow?.education || "";
     const simplifiedWhere = rawWhere.split(',')[0].trim();
     

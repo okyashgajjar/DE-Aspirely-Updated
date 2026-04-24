@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "start") {
     const firstQuestion = await getAIResponse([
-      { role: "system", content: "You are an expert interviewer for " + (role || "Software Engineering") + " roles. Ask one brief, high-impact behavioral or technical question to start the interview." }
+      { role: "system", content: "You are an expert interviewer for " + (role || "Professional") + " roles. Ask one brief, high-impact behavioral or technical question to start the interview." }
     ]);
 
     const id = crypto.randomUUID();

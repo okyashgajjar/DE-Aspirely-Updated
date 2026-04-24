@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users, onboardingProfiles, skillGaps, analyticsEvents } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getSessionUserId } from "@/lib/session";
 import {
   onboardingRequestSchema,
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
   try {
     const nonEmptySkills = skills.map(normalizeSkill).filter(Boolean);
     const queryTokens = nonEmptySkills.length > 0 ? nonEmptySkills : goals.length > 0 ? goals : interests;
-    const whatQuery = queryTokens.length > 0 ? queryTokens.join(" ") : "software engineer";
+    const whatQuery = queryTokens.length > 0 ? queryTokens.slice(0, 2).join(" ") : "professional";
 
     const { jobs } = await fetchAdzunaJobs({ what: whatQuery, where: location, resultsPerPage: 5 });
     const jobSkills = extractSkillsFromJobs(jobs);

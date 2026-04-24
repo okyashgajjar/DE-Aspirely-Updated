@@ -29,9 +29,7 @@ interface ISpeechRecognitionEvent extends Event {
   resultIndex: number;
 }
 
-interface ISpeechRecognitionErrorEvent extends Event {
-  error: string;
-}
+
 
 export function VoiceUI() {
   const [answer, setAnswer] = useState("");

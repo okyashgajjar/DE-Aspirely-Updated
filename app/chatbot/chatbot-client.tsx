@@ -2,7 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,10 +34,6 @@ export function ChatbotClient() {
     clearChat,
   } = useAIStore();
 
-  const activeModelLabel = useMemo(
-    () => CHAT_MODEL_OPTIONS.find((m) => m.id === modelId)?.label ?? modelId,
-    [modelId],
-  );
 
   useEffect(() => {
     let mounted = true;
@@ -67,7 +63,7 @@ export function ChatbotClient() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [setMessages, setError]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

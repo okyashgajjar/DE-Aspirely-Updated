@@ -20,7 +20,7 @@ const onboardingSchema = z.object({
   goals: z.array(z.string()).default([]),
 });
 
-type OnboardingValues = z.infer<typeof onboardingSchema>;
+
 type OnboardingValuesInput = z.input<typeof onboardingSchema>;
 
 const TOTAL_STEPS = 5;
@@ -186,7 +186,7 @@ export default function OnboardingPage() {
                   Select your current strengths and add anything missing.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {["React", "TypeScript", "Python", "SQL", "Product Design"].map(
+                  {["Writing", "Data Analysis", "Project Management", "Customer Service", "Python"].map(
                     (skill) => (
                       <button
                         key={skill}
@@ -255,11 +255,12 @@ export default function OnboardingPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    "Frontend Engineering",
-                    "Backend Engineering",
+                    "Engineering",
                     "Data & AI",
-                    "Product Management",
+                    "Marketing & Comms",
+                    "Operations",
                     "Design / UX",
+                    "Research",
                   ].map((interest) => (
                     <button
                       key={interest}
@@ -286,7 +287,7 @@ export default function OnboardingPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {[
-                    "Land my first tech role",
+                    "Land my first professional role",
                     "Transition into a new discipline",
                     "Grow into senior / lead",
                     "Prepare for interviews",

@@ -187,7 +187,7 @@ export async function fetchAdzunaCount(params: {
     if (!res.ok) return 0;
     const data = await res.json();
     return data.count || 0;
-  } catch (e) {
+  } catch {
     return 0;
   }
 }

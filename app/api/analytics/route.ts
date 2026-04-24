@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { analyticsEvents, onboardingProfiles, users, mockInterviews } from "@/db/schema";
 import { getSessionUserId } from "@/lib/session";
 import { eq, desc } from "drizzle-orm";
-import { fetchAdzunaHistory, fetchAdzunaGeodata, fetchAdzunaHistogram, fetchAdzunaJobs } from "@/lib/adzuna";
+import { fetchAdzunaHistory, fetchAdzunaGeodata, fetchAdzunaHistogram } from "@/lib/adzuna";
 import type { MarketAnalyticsSnapshot, MockInterview } from "@/types";
 
 export async function GET() {
@@ -31,8 +31,9 @@ export async function GET() {
   ]);
 
   // 2. Determine Context
-  const goals = (profile?.goals as string[]) || [];
-  const primaryRole = goals[0] || "Software Engineer";
+  const skillsList = (profile?.skills as string[]) || [];
+  const interestsList = (profile?.interests as string[]) || [];
+  const primaryRole = [...skillsList, ...interestsList].filter(Boolean).slice(0, 2).join(" ") || "Professional";
   const rawLocation = user?.location || "";
   const simplifiedLocation = rawLocation.split(',')[0].trim();
   const country = /india|ahmedabad|mumbai|delhi|bangalore|bengaluru/i.test(rawLocation) ? "in" : "gb";
