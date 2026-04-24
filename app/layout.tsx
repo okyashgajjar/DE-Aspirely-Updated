@@ -3,6 +3,7 @@ import { Epilogue, Inter, Manrope } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { Analytics } from "@vercel/analytics/next";
 
 const epilogue = Epilogue({
   variable: "--font-epilogue",
@@ -43,6 +44,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AppShell>{children}</AppShell>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
